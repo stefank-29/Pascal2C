@@ -42,7 +42,6 @@ class Class(Enum):
     INTEGER = auto()
     CHAR = auto()
     STRING = auto()
-    # ovo za citanje vrednosti ovih tipova
     REAL = auto()
     BOOLEAN = auto()
     

@@ -1,7 +1,7 @@
 from lexer import Lexer
 
 test_id = 1
-path = './pas/test8.pas'
+path = './pas/test6.pas'
 with open(path, 'r') as source:
     text = source.read()
 

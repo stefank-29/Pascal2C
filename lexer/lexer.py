@@ -14,7 +14,7 @@ class Lexer:
 
     def read_int(self):
         lexeme = self.text[self.pos]
-        while self.pos + 1 < self.len and (self.text[self.pos + 1].isdigit() or self.text[self.pos + 1] == '.'):
+        while self.pos + 1 < self.len and (self.text[self.pos + 1].isdigit() or ('.' not in lexeme and self.text[self.pos + 1] == '.')):
             lexeme += self.next_char()
         if '.' not in lexeme:
             return int(lexeme)
@@ -110,7 +110,12 @@ class Lexer:
         if curr.isalpha():
             token = self.read_keyword()
         elif curr.isdigit():
-            token = Token(Class.INTEGER, self.read_int())
+            number = self.read_int()
+            if isinstance(number, int):
+                token = Token(Class.INTEGER, number)
+            else:
+                token = Token(Class.REAL, number)
+           # token = Token(Class.INTEGER, self.read_int())
         elif curr == '\'':
             curr = self.next_char()
             curr = self.next_char()
