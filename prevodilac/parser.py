@@ -12,7 +12,7 @@ class Parser:
         self.prev = None
 
 
-    def restorable(self, call):
+    def restorable(call):
         @wraps(call)
         def wrapper(self, *args, **kwargs):
             state = pickle.dumps(self.__dict__) 
@@ -39,11 +39,12 @@ class Parser:
             elif self.curr.class_ == Class.PROCEDURE:
                 nodes.append(self.procedure())
             elif self.curr.class_ == Class.VAR:
-                nodes.append(self.block()) # drugi blok
+                nodes.append(self.declBlock()) # drugi blok
             elif self.curr.class_ == Class.BEGIN:
                 nodes.append(self.block())
             elif self.curr.class_ == Class.END:
-                nodes.append(self.block())
+                self.eat(Class.END)
+                self.eat(Class.DOT)
             else:
                 self.die_deriv(self.program.__name__)
         return Program(nodes)
@@ -57,15 +58,15 @@ class Parser:
     arr[i]
     '''
     def id_(self):
-        is_array_elem = self.prev.class_ != Class.TYPE
+       # is_array_elem = self.prev.class_ != Class.TYPE
         id_ = Id(self.curr.lexeme)
         self.eat(Class.ID)
-        if self.curr.class_ == Class.LPAREN and self.is_func_call():
+        if self.curr.class_ == Class.LPAREN and self.is_func_call(): # cita poziv fje
             self.eat(Class.LPAREN)
             args = self.args()
             self.eat(Class.RPAREN)
             return FuncCall(id_, args)
-        elif self.curr.class_ == Class.LBRACKET and is_array_elem:
+        elif self.curr.class_ == Class.LBRACKET:
             self.eat(Class.LBRACKET)
             index = self.expr()
             self.eat(Class.RBRACKET)
@@ -78,15 +79,32 @@ class Parser:
             return id_
 
     # TODO decl promeniti za niz je drugacije (za niz moze dodela vrednosti kod deklarisanja)
+    '''
+     
+     n, fact, i: integer;
+     arr2: array [1..3] of integer = (1, 23, 456);
+    '''
     def decl(self):
-        type_ = self.type_()
-        id_ = self.id_()
-        if self.curr.class_ == Class.LBRACKET:
+       # type_ = self.type_()
+        ids = []
+        ids.append(self.id_())
+        while self.curr.class_ != Class.DECL:
+            if len(ids) > 0:
+                self.eat(Class.COMMA)
+            ids.append(self.id_())
+        self.eat(Class.DECL) # procitani svi id-jevi
+
+        if self.curr.class_ == Class.ARRAY:
+            self.eat(Class.ARRAY)
             self.eat(Class.LBRACKET)
-            size = None
-            if self.curr.class_ != Class.RBRACKET:
-                size = self.expr()
+            low = self.expr()
+            self.eat(Class.TWODOTS)
+            high = self.expr()
             self.eat(Class.RBRACKET)
+            self.eat(Class.OF)
+            type_ = self.type_()
+            id_ = ids[0]
+
             elems = None
             if self.curr.class_ == Class.ASSIGN: # dodela vrednosti nizu = (1, 5, 7+3)
                 self.eat(Class.ASSIGN)
@@ -94,18 +112,11 @@ class Parser:
                 elems = self.elems()
                 self.eat(Class.RPAREN)
             self.eat(Class.SEMICOLON)
-            return ArrayDecl(type_, id_, size, elems)
-        elif self.curr.class_ == Class.LPAREN:
-            self.eat(Class.LPAREN)
-            params = self.params()
-            self.eat(Class.RPAREN)
-            self.eat(Class.LBRACE)
-            block = self.block()
-            self.eat(Class.RBRACE)
-            return FuncImpl(type_, id_, params, block)
+            return ArrayDecl(type_, id_, low, high, elems)
         else:
+            type_ = self.type_()
             self.eat(Class.SEMICOLON)
-            return Decl(type_, id_) 
+            return Decl(type_, ids) 
 
     # citanje funckije
     def function(self):
@@ -119,9 +130,9 @@ class Parser:
         self.eat(Class.SEMICOLON)
         #ako ima var blok
         if self.curr.class_ == Class.VAR:
-            self.eat(Class.VAR)
+            #self.eat(Class.VAR)
             declBlock = self.declBlock()
-        self.eat(Class.BEGIN)
+        #self.eat(Class.BEGIN)
         block = self.block()
         self.eat(Class.END)
         return FuncImpl(type_, id_, params, declBlock, block)
@@ -135,9 +146,9 @@ class Parser:
         self.eat(Class.SEMICOLON)
         #ako ima var blok
         if self.curr.class_ == Class.VAR:
-            self.eat(Class.VAR)
+            #self.eat(Class.VAR)
             declBlock = self.declBlock()
-        self.eat(Class.BEGIN)
+        #self.eat(Class.BEGIN)
         block = self.block()
         self.eat(Class.END)
         return ProcImpl(id_, params, declBlock, block)
@@ -147,13 +158,13 @@ class Parser:
         self.eat(Class.IF)
         cond = self.logic()
         self.eat(Class.THEN)
-        self.eat(Class.BEGIN)
+        #self.eat(Class.BEGIN)
         true = self.block()
         self.eat(Class.END)
         false = None
         if self.curr.class_ == Class.ELSE:
             self.eat(Class.ELSE)
-            self.eat(Class.BEGIN)
+            #self.eat(Class.BEGIN)
             false = self.block()
             self.eat(Class.END)
         return If(cond, true, false)
@@ -192,6 +203,7 @@ class Parser:
         return RepeatUntil(cond, block)
 
     def block(self):
+        self.eat(Class.BEGIN)
         nodes = []
         while self.curr.class_ != Class.END:
             if self.curr.class_ == Class.IF:
@@ -206,8 +218,6 @@ class Parser:
                 nodes.append(self.continue_())
             elif self.curr.class_ == Class.EXIT:
                 nodes.append(self.exit())
-            # elif self.curr.class_ == Class.TYPE:
-            #     nodes.append(self.decl())
             elif self.curr.class_ == Class.ID:
                 nodes.append(self.id_())
                 self.eat(Class.SEMICOLON)
@@ -216,6 +226,7 @@ class Parser:
         return Block(nodes)
 
     def declBlock(self):
+        self.eat(Class.VAR)
         nodes = []
         while self.curr.class_ != Class.BEGIN:  
             nodes.append(self.decl())
@@ -244,7 +255,6 @@ class Parser:
                 self.eat(Class.SEMICOLON)
         return Params(params)
 
-    # TODO
     def args(self):
         args = []
         while self.curr.class_ != Class.RPAREN:
@@ -253,7 +263,6 @@ class Parser:
             args.append(self.expr())
         return Args(args)
 
-    # TODO valjda treba RPAREN  
     def elems(self):
         elems = []
         while self.curr.class_ != Class.RPAREN:
@@ -420,6 +429,11 @@ class Parser:
         elif self.curr.class_ == Class.OR:
             op = self.curr.lexeme
             self.eat(Class.OR)
+            second = self.compare()
+            return BinOp(op, first, second)
+        elif self.curr.class_ == Class.XOR:
+            op = self.curr.lexeme
+            self.eat(Class.XOR)
             second = self.compare()
             return BinOp(op, first, second)
         else:

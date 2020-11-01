@@ -7,7 +7,7 @@ begin
 	readln(n);
 	
 	fact := 1;
-	x := 5.35
+	x := 5.35;
 	i := fact div x;
 	flag := true;
 
