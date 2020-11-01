@@ -39,8 +39,10 @@ class Parser:
             elif self.curr.class_ == Class.PROCEDURE:
                 nodes.append(self.procedure())
             elif self.curr.class_ == Class.VAR:
+                self.eat(Class.VAR)
                 nodes.append(self.declBlock()) # drugi blok
             elif self.curr.class_ == Class.BEGIN:
+                self.eat(Class.BEGIN)
                 nodes.append(self.block())
             elif self.curr.class_ == Class.END:
                 self.eat(Class.END)
@@ -66,7 +68,7 @@ class Parser:
             args = self.args()
             self.eat(Class.RPAREN)
             return FuncCall(id_, args)
-        elif self.curr.class_ == Class.LBRACKET:
+        elif self.curr.class_ == Class.LBRACKET: # element niza
             self.eat(Class.LBRACKET)
             index = self.expr()
             self.eat(Class.RBRACKET)
@@ -130,9 +132,9 @@ class Parser:
         self.eat(Class.SEMICOLON)
         #ako ima var blok
         if self.curr.class_ == Class.VAR:
-            #self.eat(Class.VAR)
+            self.eat(Class.VAR)
             declBlock = self.declBlock()
-        #self.eat(Class.BEGIN)
+        self.eat(Class.BEGIN)
         block = self.block()
         self.eat(Class.END)
         return FuncImpl(type_, id_, params, declBlock, block)
@@ -146,9 +148,9 @@ class Parser:
         self.eat(Class.SEMICOLON)
         #ako ima var blok
         if self.curr.class_ == Class.VAR:
-            #self.eat(Class.VAR)
+            self.eat(Class.VAR)
             declBlock = self.declBlock()
-        #self.eat(Class.BEGIN)
+        self.eat(Class.BEGIN)
         block = self.block()
         self.eat(Class.END)
         return ProcImpl(id_, params, declBlock, block)
@@ -158,15 +160,16 @@ class Parser:
         self.eat(Class.IF)
         cond = self.logic()
         self.eat(Class.THEN)
-        #self.eat(Class.BEGIN)
+        self.eat(Class.BEGIN)
         true = self.block()
         self.eat(Class.END)
         false = None
         if self.curr.class_ == Class.ELSE:
             self.eat(Class.ELSE)
-            #self.eat(Class.BEGIN)
+            self.eat(Class.BEGIN)
             false = self.block()
             self.eat(Class.END)
+        self.eat(Class.SEMICOLON)
         return If(cond, true, false)
 
     def while_(self):
@@ -175,6 +178,7 @@ class Parser:
         self.eat(Class.BEGIN)
         block = self.block()
         self.eat(Class.END)
+        self.eat(Class.SEMICOLON)
         return While(cond, block)
 
     def for_(self):
@@ -187,11 +191,12 @@ class Parser:
             self.eat(Class.DOWN)
             self.eat(Class.TO)
             step = -1
-        limit = self.logic()
+        limit = self.expr() # expr ili logic
         self.eat(Class.DO)
         self.eat(Class.BEGIN)
         block = self.block()
         self.eat(Class.END)
+        self.eat(Class.SEMICOLON)
         return For(init, limit, step, block)
 
     def repeat_until(self):
@@ -203,7 +208,6 @@ class Parser:
         return RepeatUntil(cond, block)
 
     def block(self):
-        self.eat(Class.BEGIN)
         nodes = []
         while self.curr.class_ != Class.END:
             if self.curr.class_ == Class.IF:
@@ -212,6 +216,8 @@ class Parser:
                 nodes.append(self.while_())
             elif self.curr.class_ == Class.FOR:
                 nodes.append(self.for_())
+            elif self.curr.class_ == Class.REPEAT:
+                nodes.append(self.repeat_until())
             elif self.curr.class_ == Class.BREAK:
                 nodes.append(self.break_())
             elif self.curr.class_ == Class.CONTINUE:
@@ -226,7 +232,6 @@ class Parser:
         return Block(nodes)
 
     def declBlock(self):
-        self.eat(Class.VAR)
         nodes = []
         while self.curr.class_ != Class.BEGIN:  
             nodes.append(self.decl())
