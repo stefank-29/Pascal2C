@@ -4,6 +4,7 @@ from token import Token
 from class_ import Class
 from astComponents import *
 
+# TODO self.eat(Class.SEMICOLON) baca gresku negde proveriti!
 
 class Parser:
     def __init__(self, tokens):
@@ -53,7 +54,6 @@ class Parser:
 
 
 
-    # TODO proveriti
     '''
 	fun(arr1[i], arr2[i]);
 	y := 5;
@@ -80,7 +80,6 @@ class Parser:
         else:                           # ako nema vracam samo id
             return id_
 
-    # TODO decl promeniti za niz je drugacije (za niz moze dodela vrednosti kod deklarisanja)
     '''
      
      n, fact, i: integer;
@@ -108,8 +107,8 @@ class Parser:
             id_ = ids[0]
 
             elems = None
-            if self.curr.class_ == Class.ASSIGN: # dodela vrednosti nizu = (1, 5, 7+3)
-                self.eat(Class.ASSIGN)
+            if self.curr.class_ == Class.EQ: # dodela vrednosti nizu = (1, 5, 7+3)
+                self.eat(Class.EQ)
                 self.eat(Class.LPAREN)
                 elems = self.elems()
                 self.eat(Class.RPAREN)
@@ -122,6 +121,7 @@ class Parser:
 
     # citanje funckije
     def function(self):
+        declBlock = None
         self.eat(Class.FUNCTION)
         id_ = self.id_()
         self.eat(Class.LPAREN)
@@ -137,9 +137,11 @@ class Parser:
         self.eat(Class.BEGIN)
         block = self.block()
         self.eat(Class.END)
+        self.eat(Class.SEMICOLON)
         return FuncImpl(type_, id_, params, declBlock, block)
 
     def procedure(self):
+        declBlock = None
         self.eat(Class.PROCEDURE)
         id_ = self.id_()
         self.eat(Class.LPAREN)
@@ -153,6 +155,7 @@ class Parser:
         self.eat(Class.BEGIN)
         block = self.block()
         self.eat(Class.END)
+        self.eat(Class.SEMICOLON)
         return ProcImpl(id_, params, declBlock, block)
         
 
@@ -235,9 +238,9 @@ class Parser:
         nodes = []
         while self.curr.class_ != Class.BEGIN:  
             nodes.append(self.decl())
-        return nodes
+        return VarBlock(nodes)
 
-    # TODO
+    # TODO ovo jos
     # (argument(s): type1; argument(s): type2; ...)
     def params(self):
         params = {}
@@ -249,10 +252,10 @@ class Parser:
             if self.curr.class_ == Class.VAR:
                 self.eat(Class.VAR)
             while self.curr.class_ != Class.DECL:
-                id_ = self.id_
-                ids.append(id_)
-                if(self.curr.class_ == Class.COMMA):
+                if len(ids) > 0:
                     self.eat(Class.COMMA)
+                id_ = self.id_()
+                ids.append(id_)
             self.eat(Class.DECL)
             currType = self.type_()
             params[currType] = ids  

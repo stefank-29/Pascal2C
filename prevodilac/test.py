@@ -2,7 +2,7 @@ from lexer import Lexer
 from parser import Parser
 
 test_id = 1
-path = './pas/test6.pas'
+path = './pas/test2.pas'
 with open(path, 'r') as source:
     text = source.read()
 
