@@ -1,8 +1,11 @@
 from lexer import Lexer
 from parser import Parser
+from grapher import *
+
+
 
 test_id = 1
-path = './pas/test10.pas'
+path = './pas/test2.pas'
 with open(path, 'r') as source:
     text = source.read()
 
@@ -11,8 +14,13 @@ with open(path, 'r') as source:
 
     parser = Parser(tokens)
     ast = parser.parse()
-    
-    print(ast)
 
-    # for t in tokens:
-    #     print(t)
+    grapher = Grapher(ast)
+    img = grapher.graph()
+    
+Image(img)
+    
+#print(ast)
+
+# for t in tokens:
+#     print(t)

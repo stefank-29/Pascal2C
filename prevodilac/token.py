@@ -1,4 +1,3 @@
-
 class Token:
     def __init__(self, class_, lexeme):
         self.class_ = class_

@@ -115,7 +115,7 @@ class Parser:
             self.eat(Class.SEMICOLON)
             return ArrayDecl(type_, id_, low, high, elems)
         else:
-            lenght = None
+            lenght = 255
             type_ = self.type_()
             if type_.value == 'string': # ako string ima naznacenu duzinu
                 if self.curr.class_ == Class.LBRACKET:

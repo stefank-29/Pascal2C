@@ -94,7 +94,7 @@ class FuncImpl(Node):
         self.type_ = type_
         self.id_ = id_
         self.params = params
-        self.declBlock = block
+        self.declBlock = declBlock
         self.block = block
 
 # naziv fje i argumenti koji se prosledjuju
@@ -107,7 +107,7 @@ class ProcImpl(Node):
     def __init__(self, id_, params, declBlock, block):
         self.id_ = id_
         self.params = params
-        self.declBlock = block
+        self.declBlock = declBlock
         self.block = block
 
 # class ProcCall(Node):
