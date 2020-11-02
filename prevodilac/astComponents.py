@@ -16,6 +16,12 @@ class Decl(Node):
         self.type_ = type_
         self.ids = ids
 
+class stringDecl(Node):
+    def __init__(self, type_, ids, lenght):
+        self.type_ = type_
+        self.ids = ids
+        self.lenght = lenght
+
 ''' 
 -cuva se tip, id, velicina, elementi 
 arr2: array [1..3] of integer = (1, 23, 456);

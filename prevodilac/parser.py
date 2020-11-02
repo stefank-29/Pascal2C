@@ -115,7 +115,15 @@ class Parser:
             self.eat(Class.SEMICOLON)
             return ArrayDecl(type_, id_, low, high, elems)
         else:
+            lenght = None
             type_ = self.type_()
+            if type_.value == 'string': # ako string ima naznacenu duzinu
+                if self.curr.class_ == Class.LBRACKET:
+                    self.eat(Class.LBRACKET)
+                    lenght = self.expr()
+                    self.eat(Class.RBRACKET)
+                    self.eat(Class.SEMICOLON)
+                return stringDecl(type_, ids, lenght)
             self.eat(Class.SEMICOLON)
             return Decl(type_, ids) 
 
@@ -296,10 +304,13 @@ class Parser:
         return Continue()
 
     def exit(self):
+        expr = None
         self.eat(Class.EXIT)
-        self.eat(Class.LPAREN)
-        expr = self.expr()
-        self.eat(Class.RPAREN)
+        if self.curr.class_ == Class.LPAREN:
+            self.eat(Class.LPAREN)
+            expr = self.expr()
+            self.eat(Class.RPAREN)
+            
         self.eat(Class.SEMICOLON)
         return Exit(expr)
 
@@ -454,7 +465,14 @@ class Parser:
             self.eat(Class.LPAREN)
             self.args()
             self.eat(Class.RPAREN)
-            return self.curr.class_ == Class.SEMICOLON
+            flag = False
+            if  self.curr.class_ != Class.DECL:
+                flag = True
+            if self.curr.class_ == Class.SEMICOLON:
+                self.eat(Class.SEMICOLON)
+                if self.curr.class_ == Class.VAR or self.curr.class_ == Class.BEGIN:
+                    flag = False
+            return flag
         except:
             return False
 
