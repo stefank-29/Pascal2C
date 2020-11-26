@@ -20,7 +20,7 @@ var
 	arr3: array [1..3] of integer;
 
 begin
-	y := 5 mod 3;
+	y := 5 ;
 
 	for i := 1 to 3 do
 	begin

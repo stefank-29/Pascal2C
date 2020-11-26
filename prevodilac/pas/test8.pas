@@ -37,7 +37,7 @@ begin
 		end
 		else
 		begin
-			write(' ');
+			write(' ')
 		end;
 	end;
 end.

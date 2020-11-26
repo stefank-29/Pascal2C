@@ -60,7 +60,6 @@ class Parser:
     arr[i]
     '''
     def id_(self):
-       # is_array_elem = self.prev.class_ != Class.TYPE
         id_ = Id(self.curr.lexeme)
         self.eat(Class.ID)
         if self.curr.class_ == Class.LPAREN and self.is_func_call(): # cita poziv fje
@@ -115,7 +114,7 @@ class Parser:
             self.eat(Class.SEMICOLON)
             return ArrayDecl(type_, id_, low, high, elems)
         else:
-            lenght = 255
+            lenght = None
             type_ = self.type_()
             if type_.value == 'string': # ako string ima naznacenu duzinu
                 if self.curr.class_ == Class.LBRACKET:
@@ -186,6 +185,7 @@ class Parser:
     def while_(self):
         self.eat(Class.WHILE)
         cond = self.logic()
+        self.eat(Class.DO)
         self.eat(Class.BEGIN)
         block = self.block()
         self.eat(Class.END)
@@ -193,15 +193,16 @@ class Parser:
         return While(cond, block)
 
     def for_(self):
+        step = None
         self.eat(Class.FOR)
         init = self.id_()
         if self.curr.class_ == Class.TO:
             self.eat(Class.TO)
-            step = 1
+            step = Integer(1)
         elif self.curr.class_ == Class.DOWN:
             self.eat(Class.DOWN)
             self.eat(Class.TO)
-            step = -1
+            step = Integer(-1)
         limit = self.expr() # expr ili logic
         self.eat(Class.DO)
         self.eat(Class.BEGIN)

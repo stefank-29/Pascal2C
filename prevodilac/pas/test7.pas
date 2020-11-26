@@ -1,4 +1,4 @@
-var
+	var
 	n, i, j: integer;
 	space, star: char;
 

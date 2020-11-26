@@ -1,5 +1,5 @@
-from graphviz import Digraph, Source
-from IPython.display import Image
+#from graphviz import Digraph, Source
+#from IPython.display import Image
 
 # TODO za svaku klasu iz astComponents treba da ima odgovarajucu visit metodu
 
@@ -25,7 +25,7 @@ class Grapher(Visitor):
         self.dot.edge_attr['arrowsize'] = '0.5'
 
     def add_node(self, parent, node, name=None):
-        node._index = self._count   # jedinstveni id  
+        node._index = self._count   # jedinstveni id
         self._count += 1
         caption = type(node).__name__ # labela
         if name is not None:
@@ -55,9 +55,9 @@ class Grapher(Visitor):
         self.add_node(parent, node)
         self.visit(node, node.type_) # obidje se tip
         for id_ in node.ids:        # obidju se id-jevu
-            self.visit(node, id_)   
-        self.visit(node, node.lenght)    
-         
+            self.visit(node, id_)
+        self.visit(node, node.lenght)
+
 
     def visit_ArrayDecl(self, parent, node):
         self.add_node(parent, node)
@@ -102,14 +102,15 @@ class Grapher(Visitor):
         self.add_node(parent, node)
         self.visit(node, node.cond)
         self.visit(node, node.block)
-        
+
 
     def visit_FuncImpl(self, parent, node):
         self.add_node(parent, node)
         self.visit(node, node.type_)
         self.visit(node, node.id_)
         self.visit(node, node.params)
-        self.visit(node, node.declBlock)
+        if node.declBlock is not None:
+          self.visit(node, node.declBlock)
         self.visit(node, node.block)
 
     def visit_FuncCall(self, parent, node):
@@ -121,7 +122,8 @@ class Grapher(Visitor):
         self.add_node(parent, node)
         self.visit(node, node.id_)
         self.visit(node, node.params)
-        self.visit(node, node.declBlock)
+        if node.declBlock is not None:
+          self.visit(node, node.declBlock)
         self.visit(node, node.block)
 
     def visit_Block(self, parent, node):
@@ -136,8 +138,11 @@ class Grapher(Visitor):
 
     def visit_Params(self, parent, node):
         self.add_node(parent, node)
-        for p in node.params:
-            self.visit(node, p)
+        for key in node.params.keys():
+            self.visit(node, key)
+            for id in node.params[key]:
+              self.visit(node, id)
+            # id za key
 
     def visit_Args(self, parent, node):
         self.add_node(parent, node)
@@ -168,6 +173,11 @@ class Grapher(Visitor):
         name = node.value
         self.add_node(parent, node, name)
 
+    def visit_int(self, parent, node):
+        print(node)
+        # name = node.value
+        # self.add_node(parent, node, name)
+
     def visit_Char(self, parent, node):
         name = node.value
         self.add_node(parent, node, name)
@@ -175,11 +185,11 @@ class Grapher(Visitor):
     def visit_String(self, parent, node):
         name = node.value
         self.add_node(parent, node, name)
-    
+
     def visit_Real(self, parent, node):
         name = node.value
         self.add_node(parent, node, name)
-    
+
     def visit_Boolean(self, parent, node):
         name = node.value
         self.add_node(parent, node, name)
