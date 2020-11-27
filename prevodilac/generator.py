@@ -55,6 +55,7 @@ class Generator(Visitor):
             self.append(' = {')
             self.visit(node, node.elems)
             self.append('}')
+        self.append(';')
         # elif node.size is not None:
         #     self.append(' = ')
         #     self.visit(node, node.size)
@@ -246,11 +247,12 @@ class Generator(Visitor):
         self.append('\r')
 
 
+    # TODO
     def visit_Params(self, parent, node):
         for i, (k, v) in enumerate(node.params.items()): # ovde vrv nesto menjati jer je dict
             if i > 0:
                 self.append(', ')
-            self.visit(p, p.id_) # k ili v
+            #self.visit(v, v.id_) # k ili v
 
     def visit_Args(self, parent, node):
         for i, a in enumerate(node.args):
