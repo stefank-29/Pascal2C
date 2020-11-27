@@ -12,7 +12,7 @@ class Generator(Visitor):
         self.c += str(text)
 
     def newline(self): 
-        self.append('\n\r')
+        self.append('\n')
 
     def indent(self): # uvlacenje
         for i in range(self.level):
@@ -22,19 +22,32 @@ class Generator(Visitor):
     # metode za visit
     def visit_Program(self, parent, node):
         for n in node.nodes:
+            #print(type(n).__name__)
             self.visit(node, n)
-        self.append('if __name__ == "__main__":')
-        self.newline()
-        self.level += 1
-        self.indent()
-        self.append('main()')
-        self.newline()
-        self.level -= 1
+            
+        #self.append('if __name__ == "__main__":')
+        #self.newline()
+        #self.level += 1
+        #self.indent()
+        #self.append('int main()')
+        #self.newline()
+        #self.level -= 1
+
 
     def visit_Decl(self, parent, node):
-        pass
+        self.visit(node, node.type_)
+        self.append(' ')
+        for i, id in enumerate(node.ids):
+            if i > 0:
+                self.append(', ')
+            self.visit(node, id)
+        self.append(';')
+        
+
+
 
     def visit_ArrayDecl(self, parent, node):
+        # prvo tip
         self.visit(node, node.id_)
         if node.elems is not None:
             self.append(' = [')
@@ -189,7 +202,16 @@ class Generator(Visitor):
         self.level -= 1
 
     def visit_VarBlock(self, parent, node):
-        pass
+        self.append('int main() {')
+        self.level += 1
+        self.newline()
+        for n in node.nodes:
+            self.indent()
+            self.visit(node, n)
+            self.newline()
+        self.level -= 1
+        self.append('\r')
+
 
     def visit_Params(self, parent, node):
         for i, p in enumerate(node.params):
@@ -225,9 +247,14 @@ class Generator(Visitor):
         pass
 
     def visit_Type(self, parent, node):
-        pass
+        if node.value == 'integer':
+            self.append('int')
+        elif node.value == 'real':
+            self.append('float')
+        else : # za sad mozda dodati nesto za bool ili char
+            self.append(node.value)
 
-    def visit_Int(self, parent, node):
+    def visit_Integer(self, parent, node):
         self.append(node.value)
 
     def visit_Char(self, parent, node):
