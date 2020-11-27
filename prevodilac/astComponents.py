@@ -116,10 +116,18 @@ class ProcImpl(Node):
 #         self.args = args   
 
 # blok sa deklaracijama
+class MainVarBlock(Node):
+    def __init__(self, nodes):
+        self.nodes = nodes
+
 class VarBlock(Node):
     def __init__(self, nodes):
         self.nodes = nodes
 
+class MainBlock(Node):
+    def __init__(self, nodes):
+        self.nodes = nodes
+        
 # blok sadrzi niz node-ova
 class Block(Node):
     def __init__(self, nodes):

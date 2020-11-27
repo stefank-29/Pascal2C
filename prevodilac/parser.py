@@ -39,12 +39,12 @@ class Parser:
                 nodes.append(self.function())
             elif self.curr.class_ == Class.PROCEDURE:
                 nodes.append(self.procedure())
-            elif self.curr.class_ == Class.VAR:
+            elif self.curr.class_ == Class.VAR: # glavni var
                 self.eat(Class.VAR)
-                nodes.append(self.declBlock()) # drugi blok
-            elif self.curr.class_ == Class.BEGIN:
+                nodes.append(self.mainDeclBlock()) # drugi blok
+            elif self.curr.class_ == Class.BEGIN: # glavni blok
                 self.eat(Class.BEGIN)
-                nodes.append(self.block())
+                nodes.append(self.mainBlock())
             elif self.curr.class_ == Class.END:
                 self.eat(Class.END)
                 self.eat(Class.DOT)
@@ -242,14 +242,44 @@ class Parser:
             else:
                 self.die_deriv(self.block.__name__)
         return Block(nodes)
+    
+    def mainBlock(self):
+        nodes = []
+        while self.curr.class_ != Class.END:
+            if self.curr.class_ == Class.IF:
+                nodes.append(self.if_())
+            elif self.curr.class_ == Class.WHILE:
+                nodes.append(self.while_())
+            elif self.curr.class_ == Class.FOR:
+                nodes.append(self.for_())
+            elif self.curr.class_ == Class.REPEAT:
+                nodes.append(self.repeat_until())
+            elif self.curr.class_ == Class.BREAK:
+                nodes.append(self.break_())
+            elif self.curr.class_ == Class.CONTINUE:
+                nodes.append(self.continue_())
+            elif self.curr.class_ == Class.EXIT:
+                nodes.append(self.exit())
+            elif self.curr.class_ == Class.ID:
+                nodes.append(self.id_())
+                self.eat(Class.SEMICOLON)
+            else:
+                self.die_deriv(self.block.__name__)
+        return MainBlock(nodes)
 
+    
     def declBlock(self):
         nodes = []
         while self.curr.class_ != Class.BEGIN:  
             nodes.append(self.decl())
         return VarBlock(nodes)
 
-    # TODO ovo jos
+    def mainDeclBlock(self):
+        nodes = []
+        while self.curr.class_ != Class.BEGIN:  
+            nodes.append(self.decl())
+        return MainVarBlock(nodes)
+
     # (argument(s): type1; argument(s): type2; ...)
     def params(self):
         params = {}

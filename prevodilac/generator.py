@@ -21,19 +21,17 @@ class Generator(Visitor):
 
     # metode za visit
     def visit_Program(self, parent, node):
+        flag = False
         for n in node.nodes:
+            if type(n).__name__ == 'MainVarBlock': # ako je usao u glavni var printam main funkciju
+                flag = True
+            if type(n).__name__ == 'MainBlock': # ako nisam imao var onda za glavni blok stampam int main
+                if flag != True:
+                    self.append('int main() {')
+                    self.newline()
             #print(type(n).__name__)
             self.visit(node, n)
-            
-        #self.append('if __name__ == "__main__":')
-        #self.newline()
-        #self.level += 1
-        #self.indent()
-        #self.append('int main()')
-        #self.newline()
-        #self.level -= 1
-
-
+  
     def visit_Decl(self, parent, node):
         self.visit(node, node.type_)
         self.append(' ')
@@ -42,21 +40,25 @@ class Generator(Visitor):
                 self.append(', ')
             self.visit(node, id)
         self.append(';')
-        
-
-
+     
+    # int niz[5] = {1, 2, 3}
 
     def visit_ArrayDecl(self, parent, node):
         # prvo tip
+        self.visit(node, node.type_)
         self.visit(node, node.id_)
+        lenght = node.high - node.low
+        self.append('[')
+        self.append(f'{lenght}')
+        self.append(']')
         if node.elems is not None:
-            self.append(' = [')
+            self.append(' = {')
             self.visit(node, node.elems)
-            self.append(']')
-        elif node.size is not None:
-            self.append(' = ')
-            self.visit(node, node.size)
-            self.append(' * [None]')
+            self.append('}')
+        # elif node.size is not None:
+        #     self.append(' = ')
+        #     self.visit(node, node.size)
+        #     self.append(' * [None]')
 
 
     def visit_ArrayElem(self, parent, node):
@@ -69,6 +71,7 @@ class Generator(Visitor):
         self.visit(node, node.id_)
         self.append(' = ')
         self.visit(node, node.expr)
+        self.append(';')
 
     def visit_If(self, parent, node):
         self.append('if ')
@@ -107,6 +110,7 @@ class Generator(Visitor):
         pass
 
     def visit_FuncImpl(self, parent, node):
+        # type
         self.append('def ')
         self.append(node.id_.value)
         self.append('(')
@@ -115,6 +119,9 @@ class Generator(Visitor):
         self.newline()
         self.visit(node, node.block)
 
+
+
+    # TODO ord() ne treba 
     def visit_FuncCall(self, parent, node):
         func = node.id_.value
         args = node.args.args
@@ -193,16 +200,42 @@ class Generator(Visitor):
     def visit_ProcImpl(self, parent, node):
         pass
 
+    def visit_MainBlock(self, parent, node):
+        #self.append('int main() {')
+        self.level += 1
+        for n in node.nodes:
+            self.indent()
+            self.visit(node, n)
+            self.newline()
+        self.append('\r')
+        self.append('\treturn 0;\n')
+        self.level -= 1
+        self.append('}')
+
     def visit_Block(self, parent, node):
+        self.append(' {\n')
         self.level += 1
         for n in node.nodes:
             self.indent()
             self.visit(node, n)
             self.newline()
         self.level -= 1
+        self.append('}')
+
+    def visit_MainVarBlock(self, parent, node):
+        self.append('int main() {')
+        self.level += 1
+        self.newline()
+        for n in node.nodes:
+            self.indent()
+            self.visit(node, n)
+            self.newline()
+        self.level -= 1
+        self.append('\r')
+        
+
 
     def visit_VarBlock(self, parent, node):
-        self.append('int main() {')
         self.level += 1
         self.newline()
         for n in node.nodes:
@@ -214,10 +247,10 @@ class Generator(Visitor):
 
 
     def visit_Params(self, parent, node):
-        for i, p in enumerate(node.params):
+        for i, (k, v) in enumerate(node.params.items()): # ovde vrv nesto menjati jer je dict
             if i > 0:
                 self.append(', ')
-            self.visit(p, p.id_)
+            self.visit(p, p.id_) # k ili v
 
     def visit_Args(self, parent, node):
         for i, a in enumerate(node.args):
@@ -232,10 +265,10 @@ class Generator(Visitor):
             self.visit(node, e)
 
     def visit_Break(self, parent, node):
-        self.append('break')
+        self.append('break;')
 
     def visit_Continue(self, parent, node):
-        self.append('continue')
+        self.append('continue;')
 
     # def visit_Return(self, parent, node):
     #     self.append('return')
@@ -244,30 +277,36 @@ class Generator(Visitor):
     #         self.visit(node, node.expr)
 
     def visit_Exit(self, parent, node):
-        pass
+        self.append('return')
+        if node.expr is not None:
+            self.append(' ')
+            self.visit(node, node.expr)
+            self.append(';')
 
     def visit_Type(self, parent, node):
         if node.value == 'integer':
             self.append('int')
         elif node.value == 'real':
             self.append('float')
-        else : # za sad mozda dodati nesto za bool ili char
+        elif node.value == 'boolean':
+            self.append('bool')
+        else : # za sad mozda dodati nesto za string ili char, mada su oni isti
             self.append(node.value)
 
     def visit_Integer(self, parent, node):
         self.append(node.value)
 
     def visit_Char(self, parent, node):
-        self.append(ord(node.value))
+        self.append(ord(node.value)) # char u c-u je konvertovan u celobrojnu vrednost
 
     def visit_String(self, parent, node):
         self.append(node.value)
 
     def visit_Real(self, parent, node):
-        pass
+        self.append(node.value)
 
     def visit_Boolean(self, parent, node):
-        pass
+        self.append(node.value)
 
     def visit_Id(self, parent, node):
         self.append(node.value)
