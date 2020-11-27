@@ -3,7 +3,7 @@ from parser import Parser
 from generator import Generator
 #from grapher import *
 
-path = './pas/test3.pas'
+path = './pas/test1.pas'
 with open(path, 'r') as source:
     text = source.read()
     lexer = Lexer(text)
@@ -13,7 +13,7 @@ with open(path, 'r') as source:
     ast = parser.parse()
 
     generator = Generator(ast)
-    code = generator.generate('main.py')
+    code = generator.generate('main.c') # ime fajla
 
     print(code)
 #grapher = Grapher(ast)
@@ -24,5 +24,3 @@ with open(path, 'r') as source:
 #     print(t)
 
 
-
-#TODO za for id vraca i id i expr (treba odvojeno da ih sacuvam)

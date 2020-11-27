@@ -4,19 +4,22 @@ from grapher import Visitor
 class Generator(Visitor):
     def __init__(self, ast):
         self.ast = ast
-        self.py = ""
+        self.c = ""
         self.level = 0
 
-    def append(self, text):
-        self.py += str(text)
+    # pomocne funkcije
+    def append(self, text): # dodaje string u kod 
+        self.c += str(text)
 
-    def newline(self):
+    def newline(self): 
         self.append('\n\r')
 
-    def indent(self):
+    def indent(self): # uvlacenje
         for i in range(self.level):
             self.append('\t')
 
+
+    # metode za visit
     def visit_Program(self, parent, node):
         for n in node.nodes:
             self.visit(node, n)
@@ -41,6 +44,7 @@ class Generator(Visitor):
             self.append(' = ')
             self.visit(node, node.size)
             self.append(' * [None]')
+
 
     def visit_ArrayElem(self, parent, node):
         self.visit(node, node.id_)
@@ -85,6 +89,9 @@ class Generator(Visitor):
         self.indent()
         self.visit(node, node.step)
         self.level -= 1
+
+    def visit_RepeatUntil(self, parent, node):
+        pass
 
     def visit_FuncImpl(self, parent, node):
         self.append('def ')
@@ -170,6 +177,9 @@ class Generator(Visitor):
             self.visit(node, node.args)
             self.append(')')
 
+    def visit_ProcImpl(self, parent, node):
+        pass
+
     def visit_Block(self, parent, node):
         self.level += 1
         for n in node.nodes:
@@ -177,6 +187,9 @@ class Generator(Visitor):
             self.visit(node, n)
             self.newline()
         self.level -= 1
+
+    def visit_VarBlock(self, parent, node):
+        pass
 
     def visit_Params(self, parent, node):
         for i, p in enumerate(node.params):
@@ -202,11 +215,14 @@ class Generator(Visitor):
     def visit_Continue(self, parent, node):
         self.append('continue')
 
-    def visit_Return(self, parent, node):
-        self.append('return')
-        if node.expr is not None:
-            self.append(' ')
-            self.visit(node, node.expr)
+    # def visit_Return(self, parent, node):
+    #     self.append('return')
+    #     if node.expr is not None:
+    #         self.append(' ')
+    #         self.visit(node, node.expr)
+
+    def visit_Exit(self, parent, node):
+        pass
 
     def visit_Type(self, parent, node):
         pass
@@ -219,6 +235,12 @@ class Generator(Visitor):
 
     def visit_String(self, parent, node):
         self.append(node.value)
+
+    def visit_Real(self, parent, node):
+        pass
+
+    def visit_Boolean(self, parent, node):
+        pass
 
     def visit_Id(self, parent, node):
         self.append(node.value)
@@ -243,8 +265,8 @@ class Generator(Visitor):
         self.visit(node, node.first)
 
     def generate(self, path):
-        self.visit(None, self.ast)
-        self.py = re.sub('\n\s*\n', '\n', self.py)
+        self.visit(None, self.ast) # visit za koren stabla (Program) - rekurzivan poziv (generise kod za svaki cvor)
+        self.c = re.sub('\n\s*\n', '\n', self.c) # vise praznih linija menjamo sa jednom linijom
         with open(path, 'w') as source:
-            source.write(self.py)
+            source.write(self.c)
         return path
