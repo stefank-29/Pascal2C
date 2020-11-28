@@ -48,10 +48,10 @@ class Generator(Visitor):
     # int niz[5] = {1, 2, 3}
 
     def visit_ArrayDecl(self, parent, node):
-        # prvo tip
         self.visit(node, node.type_)
+        self.append(' ')
         self.visit(node, node.id_)
-        lenght = node.high - node.low
+        lenght = int(node.high.value) - int(node.low.value) + 1
         self.append('[')
         self.append(f'{lenght}')
         self.append(']')
@@ -71,7 +71,7 @@ class Generator(Visitor):
         self.append('[')
         self.visit(node, node.index)
         self.append(']')
-        self.append(';')
+        
 
     def visit_Assign(self, parent, node):
         self.visit(node, node.id_)
@@ -129,8 +129,8 @@ class Generator(Visitor):
         pass
 
     def visit_FuncImpl(self, parent, node):
-        # type
-        self.append('def ')
+        self.visit(node, node.type_)
+        self.append(' ')
         self.append(node.id_.value)
         self.append('(')
         self.visit(node, node.params)
@@ -138,6 +138,8 @@ class Generator(Visitor):
         self.newline()
         self.visit(node, node.block)
 
+    def visit_ProcImpl(self, parent, node):
+        pass
 
 
     # TODO ord() ne treba 
@@ -216,8 +218,7 @@ class Generator(Visitor):
             self.visit(node, node.args)
             self.append(')')
 
-    def visit_ProcImpl(self, parent, node):
-        pass
+    
 
     def visit_MainBlock(self, parent, node):
         #self.append('int main() {')
@@ -335,7 +336,7 @@ class Generator(Visitor):
 
     def visit_Id(self, parent, node):
         self.append(node.value)
-        
+
     def visit_BinOp(self, parent, node):
         self.visit(node, node.first)
         if node.symbol == '&&':
