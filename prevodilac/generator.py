@@ -77,9 +77,9 @@ class Generator(Visitor):
         self.visit(node, node.id_)
         self.append(' = ')
         self.visit(node, node.expr)
-        # if type(node.expr).__name__ != 'BinOp' and node.expr.value:
-        #     print (node.expr.value)
-        self.append('; ')
+        if type(node.expr).__name__ != 'FuncCall': # funcCall vec ima ';' na kraju (da ne bude duplo)
+            self.append('; ')
+       
 
     def visit_If(self, parent, node):
         self.append('if (')
@@ -134,12 +134,17 @@ class Generator(Visitor):
         self.append(node.id_.value)
         self.append('(')
         self.visit(node, node.params)
-        self.append('):')
-        self.newline()
+        self.append(')')
         self.visit(node, node.block)
 
     def visit_ProcImpl(self, parent, node):
-        pass
+        self.append('void ')
+        self.append(node.id_.value)
+        self.append('(')
+        self.visit(node, node.params)
+        self.append(')')
+        self.visit(node, node.block)
+        self.newline()
 
 
     # TODO ord() ne treba 
@@ -217,6 +222,7 @@ class Generator(Visitor):
             self.append('(')
             self.visit(node, node.args)
             self.append(')')
+        self.append(';') #! resiti za ; samo kad je sam poziv
 
     
 
@@ -242,6 +248,10 @@ class Generator(Visitor):
         self.level -= 1
         self.indent()
         self.append('}')
+        self.append('\n\r')
+        
+
+        
 
     def visit_MainVarBlock(self, parent, node):
         self.append('int main() {')
