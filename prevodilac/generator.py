@@ -2,8 +2,9 @@ import re
 from grapher import Visitor
 
 # TODO
-#! bool nema (true = 1, false = 0)
-#! ==, >=, <, rezultat je 1 ako je true a 0 ako je false
+#? poziv funckija
+#? parametri
+#? argumenti
 
 class Generator(Visitor):
     def __init__(self, ast):
@@ -43,7 +44,6 @@ class Generator(Visitor):
             if i > 0:
                 self.append(', ')
             self.visit(node, id)
-        self.append(';')
      
     # int niz[5] = {1, 2, 3}
 
@@ -59,12 +59,7 @@ class Generator(Visitor):
             self.append(' = {')
             self.visit(node, node.elems)
             self.append('}')
-        self.append(';')
-        # elif node.size is not None:
-        #     self.append(' = ')
-        #     self.visit(node, node.size)
-        #     self.append(' * [None]')
-
+        
 
     def visit_ArrayElem(self, parent, node):
         self.visit(node, node.id_)
@@ -77,20 +72,17 @@ class Generator(Visitor):
         self.visit(node, node.id_)
         self.append(' = ')
         self.visit(node, node.expr)
-        if type(node.expr).__name__ != 'FuncCall': # funcCall vec ima ';' na kraju (da ne bude duplo)
-            self.append('; ')
+        
        
 
     def visit_If(self, parent, node):
         self.append('if (')
         self.visit(node, node.cond)
         self.append(')')
-        self.newline()
         self.visit(node, node.true)
         if node.false is not None:
             self.indent()
             self.append('else ')
-            self.newline()
             self.visit(node, node.false)
 
 
@@ -108,6 +100,7 @@ class Generator(Visitor):
         #? cond (op1 - operator - op2) bez ';'
         self.append('for (')
         self.visit(node, node.init) # assign;
+        self.append('; ')
         i = node.init.id_.value # promenljiva u cond
         if node.step.value == 1:
             self.visit(node, node.init.id_)
@@ -126,7 +119,11 @@ class Generator(Visitor):
         
 
     def visit_RepeatUntil(self, parent, node): # do while
-        pass
+        self.append('do')
+        self.visit(node, node.block)
+        self.append(' while (')
+        self.visit(node, node.cond)
+        self.append(');')
 
     def visit_FuncImpl(self, parent, node):
         self.visit(node, node.type_)
@@ -136,6 +133,7 @@ class Generator(Visitor):
         self.visit(node, node.params)
         self.append(')')
         self.visit(node, node.block)
+        #TODO return od funkcije
 
     def visit_ProcImpl(self, parent, node):
         self.append('void ')
@@ -222,7 +220,6 @@ class Generator(Visitor):
             self.append('(')
             self.visit(node, node.args)
             self.append(')')
-        self.append(';') #! resiti za ; samo kad je sam poziv
 
     
 
@@ -232,11 +229,26 @@ class Generator(Visitor):
         for n in node.nodes:
             self.indent()
             self.visit(node, n)
+            self.append(';')
             self.newline()
         self.append('\r')
         self.append('\treturn 0;\n')
         self.level -= 1
         self.append('}')
+
+    def visit_RepeatBlock(self, parent, node):
+        self.append(' {\n')
+        self.level += 1
+        for n in node.nodes:
+            self.indent()
+            self.visit(node, n)
+            self.append(';')
+            self.newline()
+        self.level -= 1
+        self.indent()
+        self.append('}')
+
+    
 
     def visit_Block(self, parent, node):
         self.append(' {\n')
@@ -244,6 +256,7 @@ class Generator(Visitor):
         for n in node.nodes:
             self.indent()
             self.visit(node, n)
+            self.append(';')
             self.newline()
         self.level -= 1
         self.indent()
@@ -260,6 +273,7 @@ class Generator(Visitor):
         for n in node.nodes:
             self.indent()
             self.visit(node, n)
+            self.append(';')
             self.newline()
         self.level -= 1
         self.append('\r')
@@ -272,6 +286,7 @@ class Generator(Visitor):
         for n in node.nodes:
             self.indent()
             self.visit(node, n)
+            self.append(';')
             self.newline()
         self.level -= 1
         self.append('\r')
@@ -280,9 +295,15 @@ class Generator(Visitor):
     # TODO
     def visit_Params(self, parent, node):
         for i, (k, v) in enumerate(node.params.items()): # ovde vrv nesto menjati jer je dict
-            if i > 0:
-                self.append(', ')
-            #self.visit(v, v.id_) # k ili v
+            type_ = k
+            ids = v
+            for index, id_ in enumerate(ids):
+                self.visit(node, type_)
+                self.append(' ')
+                self.visit(node, id_)
+                if index != (len(ids)-1) or i != (len(node.params.items())-1):
+                    self.append(', ')
+            
 
     def visit_Args(self, parent, node):
         for i, a in enumerate(node.args):
@@ -302,18 +323,11 @@ class Generator(Visitor):
     def visit_Continue(self, parent, node):
         self.append('continue;')
 
-    # def visit_Return(self, parent, node):
-    #     self.append('return')
-    #     if node.expr is not None:
-    #         self.append(' ')
-    #         self.visit(node, node.expr)
-
     def visit_Exit(self, parent, node):
         self.append('return')
         if node.expr is not None:
             self.append(' ')
             self.visit(node, node.expr)
-            self.append(';')
 
     def visit_Type(self, parent, node):
         if node.value == 'integer':
@@ -329,7 +343,7 @@ class Generator(Visitor):
         self.append(node.value)
 
     def visit_Char(self, parent, node):
-        self.append(ord(node.value)) # char u c-u je konvertovan u celobrojnu vrednost
+        self.append(f'\'{node.value}\'') # char u c-u je konvertovan u celobrojnu vrednost
 
     def visit_String(self, parent, node):
         self.append(node.value)
@@ -347,21 +361,29 @@ class Generator(Visitor):
     def visit_Id(self, parent, node):
         self.append(node.value)
 
-    def visit_BinOp(self, parent, node):
+    def visit_BinOp(self, parent, node): #TODO ako su drugaciji op zameniti
         self.visit(node, node.first)
-        if node.symbol == '&&':
-            self.append(' and ')
-        elif node.symbol == '||':
-            self.append(' or ')
-        elif node.symbol == '/':
-            self.append('//')
+        self.append(' ')
+        if node.symbol == 'and':
+            self.append(' && ')
+        elif node.symbol == 'or':
+            self.append(' || ')
+        elif node.symbol == '<>':
+            self.append('!=')
+        elif node.symbol == '=':
+            self.append('==')
+        elif node.symbol == 'div':
+            self.append('/')
+        elif node.symbol == 'mod':
+            self.append('%')
         else:
             self.append(node.symbol)
+        self.append(' ')
         self.visit(node, node.second)
 
-    def visit_UnOp(self, parent, node):
-        if node.symbol == '!':
-            self.append('not ')
+    def visit_UnOp(self, parent, node): #TODO zameniti opeartore koji su razliciti
+        if node.symbol == 'not':
+            self.append('!')
         elif node.symbol != '&':
             self.append(node.symbol)
         self.visit(node, node.first)

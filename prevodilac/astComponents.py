@@ -82,7 +82,7 @@ class For(Node):
 # block - cond
 class RepeatUntil(Node):
     def __init__(self, cond, block):
-        self.cond = cond,
+        self.cond = cond
         self.block = block
 
 '''
@@ -121,6 +121,10 @@ class MainVarBlock(Node):
         self.nodes = nodes
 
 class VarBlock(Node):
+    def __init__(self, nodes):
+        self.nodes = nodes
+
+class RepeatBlock(Node):
     def __init__(self, nodes):
         self.nodes = nodes
 

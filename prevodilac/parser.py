@@ -212,7 +212,7 @@ class Parser:
 
     def repeat_until(self):
         self.eat(Class.REPEAT)
-        block = self.block()
+        block = self.repeatBlock() # repeat block
         self.eat(Class.UNTIL)
         cond = self.logic()
         self.eat(Class.SEMICOLON)
@@ -242,6 +242,31 @@ class Parser:
                 self.die_deriv(self.block.__name__)
         return Block(nodes)
     
+    def repeatBlock(self):
+        nodes = []
+        while self.curr.class_ != Class.UNTIL:
+            if self.curr.class_ == Class.IF:
+                nodes.append(self.if_())
+            elif self.curr.class_ == Class.WHILE:
+                nodes.append(self.while_())
+            elif self.curr.class_ == Class.FOR:
+                nodes.append(self.for_())
+            elif self.curr.class_ == Class.REPEAT:
+                nodes.append(self.repeat_until())
+            elif self.curr.class_ == Class.BREAK:
+                nodes.append(self.break_())
+            elif self.curr.class_ == Class.CONTINUE:
+                nodes.append(self.continue_())
+            elif self.curr.class_ == Class.EXIT:
+                nodes.append(self.exit())
+            elif self.curr.class_ == Class.ID:
+                nodes.append(self.id_())
+                self.eat(Class.SEMICOLON)
+            else:
+                self.die_deriv(self.block.__name__)
+        return RepeatBlock(nodes)
+
+
     def mainBlock(self):
         nodes = []
         while self.curr.class_ != Class.END:
