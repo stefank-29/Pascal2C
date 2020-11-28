@@ -1,6 +1,10 @@
 import re
 from grapher import Visitor
 
+# TODO
+#! bool nema (true = 1, false = 0)
+#! ==, >=, <, rezultat je 1 ako je true a 0 ako je false
+
 class Generator(Visitor):
     def __init__(self, ast):
         self.ast = ast
@@ -73,6 +77,8 @@ class Generator(Visitor):
         self.visit(node, node.id_)
         self.append(' = ')
         self.visit(node, node.expr)
+        # if type(node.expr).__name__ != 'BinOp' and node.expr.value:
+        #     print (node.expr.value)
         self.append('; ')
 
     def visit_If(self, parent, node):
@@ -117,10 +123,7 @@ class Generator(Visitor):
             self.append('i = i - 1')
         self.append(')')
         self.visit(node, node.block)
-        self.level += 1
-        self.indent()
-        self.visit(node, node.step)
-        self.level -= 1
+        
 
     def visit_RepeatUntil(self, parent, node): # do while
         pass
@@ -236,6 +239,7 @@ class Generator(Visitor):
             self.visit(node, n)
             self.newline()
         self.level -= 1
+        self.indent()
         self.append('}')
 
     def visit_MainVarBlock(self, parent, node):
@@ -306,7 +310,7 @@ class Generator(Visitor):
         elif node.value == 'real':
             self.append('float')
         elif node.value == 'boolean':
-            self.append('bool')
+            self.append('int')
         else : # za sad mozda dodati nesto za string ili char, mada su oni isti
             self.append(node.value)
 
@@ -323,11 +327,15 @@ class Generator(Visitor):
         self.append(node.value)
 
     def visit_Boolean(self, parent, node):
-        self.append(node.value)
+        #self.append(node.value)
+        if node.value == 'true':
+            self.append('1')
+        elif node.value == 'false':
+            self.append('0')
 
     def visit_Id(self, parent, node):
         self.append(node.value)
-
+        
     def visit_BinOp(self, parent, node):
         self.visit(node, node.first)
         if node.symbol == '&&':
