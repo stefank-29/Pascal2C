@@ -58,7 +58,7 @@ class Class(Enum):
 
     DO = auto()
     TO = auto()
-    DOWN = auto()
+    DOWNTO = auto()
     THEN = auto()
 
     ARRAY = auto()

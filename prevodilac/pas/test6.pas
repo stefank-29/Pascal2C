@@ -11,7 +11,7 @@ begin
 	i := fact div x;
 	flag := true;
 
-	for i := 2 to n do
+	for i := 10 downto n do
 	begin
 		fact := fact * i;
 	end;

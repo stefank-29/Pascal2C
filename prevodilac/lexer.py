@@ -84,8 +84,8 @@ class Lexer:
             return Token(Class.DO, lexeme)
         elif lexeme == 'to':
             return Token(Class.TO, lexeme)
-        elif lexeme == 'down':
-            return Token(Class.DOWN, lexeme)    
+        elif lexeme == 'downto':
+            return Token(Class.DOWNTO, lexeme)    
         elif lexeme == 'then':
             return Token(Class.THEN, lexeme)
         elif lexeme == 'true' or lexeme == 'false':

@@ -67,47 +67,62 @@ class Generator(Visitor):
         self.append('[')
         self.visit(node, node.index)
         self.append(']')
+        self.append(';')
 
     def visit_Assign(self, parent, node):
         self.visit(node, node.id_)
         self.append(' = ')
         self.visit(node, node.expr)
-        self.append(';')
+        self.append('; ')
 
     def visit_If(self, parent, node):
-        self.append('if ')
+        self.append('if (')
         self.visit(node, node.cond)
-        self.append(':')
+        self.append(')')
         self.newline()
         self.visit(node, node.true)
         if node.false is not None:
             self.indent()
-            self.append('else:')
+            self.append('else ')
             self.newline()
             self.visit(node, node.false)
 
-    def visit_While(self, parent, node):
-        self.append('while ')
-        self.visit(node, node.cond)
-        self.append(':')
+
+    def visit_While(self, parent, node): 
+        self.append('while (')
+        self.visit(node, node.cond) # cond je BinOp (expr - Operator - drugi expr)
+        self.append(')')
         self.newline()
         self.visit(node, node.block)
 
+    # for i := 1 to n do        
+    # for (i = 1 ; i <= n ; i++)              
     def visit_For(self, parent, node):
-        self.visit(node, node.init)
-        self.newline()
-        self.indent()
-        self.append('while ')
-        self.visit(node, node.cond)
-        self.append(':')
-        self.newline()
+        #? init je assign
+        #? cond (op1 - operator - op2) bez ';'
+        self.append('for (')
+        self.visit(node, node.init) # assign;
+        i = node.init.id_.value # promenljiva u cond
+        if node.step.value == 1:
+            self.visit(node, node.init.id_)
+            self.append(' <= ')
+            self.visit(node, node.limit) 
+            self.append('; ')
+            self.append('i = i + 1')
+        elif node.step.value == -1:
+            self.visit(node, node.init.id_)
+            self.append(' >= ')
+            self.visit(node, node.limit) 
+            self.append('; ')
+            self.append('i = i - 1')
+        self.append(')')
         self.visit(node, node.block)
         self.level += 1
         self.indent()
         self.visit(node, node.step)
         self.level -= 1
 
-    def visit_RepeatUntil(self, parent, node):
+    def visit_RepeatUntil(self, parent, node): # do while
         pass
 
     def visit_FuncImpl(self, parent, node):

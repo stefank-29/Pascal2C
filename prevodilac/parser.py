@@ -199,9 +199,8 @@ class Parser:
         if self.curr.class_ == Class.TO:
             self.eat(Class.TO)
             step = Integer(1)
-        elif self.curr.class_ == Class.DOWN:
-            self.eat(Class.DOWN)
-            self.eat(Class.TO)
+        elif self.curr.class_ == Class.DOWNTO:
+            self.eat(Class.DOWNTO)
             step = Integer(-1)
         limit = self.expr() # expr ili logic
         self.eat(Class.DO)
