@@ -3,7 +3,7 @@ from parser import Parser
 from generator import Generator
 #from grapher import *
 
-path = './pas/test3.pas'
+path = './pas/test10.pas'
 with open(path, 'r') as source:
     text = source.read()
     lexer = Lexer(text)

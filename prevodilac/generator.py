@@ -3,8 +3,7 @@ from grapher import Visitor
 
 # TODO
 #? poziv funckija
-#? parametri
-#? argumenti
+#? return u funkciji
 
 class Generator(Visitor):
     def __init__(self, ast):
@@ -60,6 +59,15 @@ class Generator(Visitor):
             self.visit(node, node.elems)
             self.append('}')
         
+    # char id[len] = {0}
+    def visit_stringDecl(self, parent, node):
+        self.visit(node, node.type_)
+        self.append(' ')
+        for i, id in enumerate(node.ids):
+            if i > 0:
+                self.append(', ')
+            self.visit(node, id)
+        
 
     def visit_ArrayElem(self, parent, node):
         self.visit(node, node.id_)
@@ -67,6 +75,8 @@ class Generator(Visitor):
         self.visit(node, node.index)
         self.append(']')
         
+
+
 
     def visit_Assign(self, parent, node):
         self.visit(node, node.id_)

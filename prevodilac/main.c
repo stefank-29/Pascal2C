@@ -1,23 +1,13 @@
-void fun(int a, int b) {
-	writeln(a, ' ', b);
-}
-int fun2(int a, int b, char x) {
-	fun2 = a + b;
-}
-int fun3(int p, int q, int r) {
-	fun3 = q + r;
-}
-int main() {
-	int x, y, i;
-	int arr1[3];
-	int arr2[3] = {1, 23, 456};
-	int arr3[3];
-	y = 5;
-	for (i = 1; i <= 3; i = i + 1) {
-		arr1[i] = arr2[i];
-		arr1[i] = fun2(arr1[i], arr2[i]);
-		fun(arr1[i], arr2[i]);
-	}
-;
+int main() {
+	string asd, efg;
+	int len;
+	asd = qwerty;
+	write(Unesite string: );
+	readln(efg);
+	writeln(Konkatenacija stringova: , asd,  + , efg);
+	asd = concat(asd, efg);
+	len = length(asd);
+	writeln(Rezultat konkatenacije: , asd);
+	writeln(Duzina konkatenacije: , len);
 	return 0;
 }

@@ -3,7 +3,7 @@ begin
 	writeln(a, ' ', b);
 end;
 
-function fun2(a, b: integer; x: char) : integer;
+function fun2(a, b: integer) : integer;
 begin
 	fun2 := a + b;
 end;
