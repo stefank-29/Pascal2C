@@ -3,7 +3,7 @@ from parser import Parser
 from generator import Generator
 #from grapher import *
 
-path = './pas/test10.pas'
+path = './pas/test2.pas'
 with open(path, 'r') as source:
     text = source.read()
     lexer = Lexer(text)
@@ -14,7 +14,7 @@ with open(path, 'r') as source:
 
     generator = Generator(ast)
     code = generator.generate('main.c') # ime fajla
-    print(code)
+    #print(code)
 
 
 #grapher = Grapher(ast)

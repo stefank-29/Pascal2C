@@ -7,7 +7,7 @@ int main() {
 	
 	printf("Konkatenacija stringova: %s + %s\n", asd, efg);
 	
-	strcat(asd, efg);
+	strcat(asd, efg);	
 	
 	int length;
 	length = strlen(asd);

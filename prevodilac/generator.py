@@ -10,6 +10,7 @@ class Generator(Visitor):
         self.ast = ast
         self.c = ""
         self.level = 0
+        self.varTypes = {}
 
     # pomocne funkcije
     def append(self, text): # dodaje string u kod 
@@ -40,6 +41,9 @@ class Generator(Visitor):
         self.visit(node, node.type_)
         self.append(' ')
         for i, id in enumerate(node.ids):
+            v = self.varTypes.get(node.type_.value, []) # ako nema jos vrati prazan niz
+            v.append(id.value)
+            self.varTypes[node.type_.value] = v
             if i > 0:
                 self.append(', ')
             self.visit(node, id)
@@ -74,6 +78,9 @@ class Generator(Visitor):
             if i != (len(node.ids)-1):
                 self.append(';')
                 self.newline()
+            v = self.varTypes.get(node.type_.value, []) 
+            v.append(id.value)
+            self.varTypes[node.type_.value] = v
         
 
     def visit_ArrayElem(self, parent, node):
@@ -166,40 +173,41 @@ class Generator(Visitor):
         self.newline()
 
 
-    # TODO ord() ne treba 
-    # concat
-    # length
     # readln
-    # writeln
-    # write
+   
     def visit_FuncCall(self, parent, node):
         func = node.id_.value
         args = node.args.args # niz argumenata
-        if func == 'write':
-            format_ = args[0].value
-            matches = re.findall('%[dcs]', format_)
-            format_ = re.sub('%[dcs]', '{}', format_)
-            self.append('print("')
-            self.append(format_)
-            self.append('"')
-            if len(args) > 1:
-                self.append('.format(')
-                for i, a in enumerate(args[1:]):
-                    if i > 0:
-                        self.append(', ')
-                    if matches[i] == '%c':
-                        self.append('chr(')
-                        self.visit(node.args, a)
-                        self.append(')')
-                    elif matches[i] == '%s':
-                        self.append('"".join([chr(x) for x in ')
-                        self.visit(node.args, a)
-                        self.append('])')
-                    else:
-                        self.visit(node.args, a)
-                self.append(')')
-            self.append(', end="")')
-        elif func == 'scanf':
+        if func == 'writeln':
+            variables = []
+            self.append('printf("')
+            for arg in args:
+                if type(arg).__name__ == 'String':
+                    self.append(arg.value)
+                elif type(arg).__name__ == 'Id':
+                    variables.append(arg)
+                    for k, arr in self.varTypes.items():
+                        for val in arr:
+                            if val == arg.value:
+                                if k == 'string':
+                                    self.append('%s')
+                                elif k == 'integer':
+                                    self.append('%d')
+                                elif k == 'real':
+                                    self.append('%f')
+                                elif k == 'char':
+                                    self.append('%c')
+            self.append('\\n"')
+            if len(variables) > 0:
+                self.append(', ')
+            for i, var in enumerate(variables):
+                self.visit(node, var)
+                if i != (len(variables)-1):
+                    self.append(', ')
+            self.append(')')
+        
+        # TODO readln
+        elif func == 'readln' or func == 'read':
             for i, a in enumerate(args[1:]):
                 if i > 0:
                     self.append(', ')
@@ -231,26 +239,70 @@ class Generator(Visitor):
                     self.append(' = [ord(x) for x in ')
                     self.visit(node.args, args[i + 1])
                     self.append(']')
+
+        elif func == 'write':
+            variables = []
+            self.append('printf("')
+            for arg in args:
+                if type(arg).__name__ == 'String':
+                    self.append(arg.value)
+                elif type(arg).__name__ == 'Id':
+                    variables.append(arg)
+                    for k, arr in self.varTypes.items():
+                        for val in arr:
+                            if val == arg.value:
+                                if k == 'string':
+                                    self.append('%s')
+                                elif k == 'integer':
+                                    self.append('%d')
+                                elif k == 'real':
+                                    self.append('%f')
+                                elif k == 'char':
+                                    self.append('%c')
+            self.append('"')
+            if len(variables) > 0:
+                self.append(', ')
+            for i, var in enumerate(variables):
+                self.visit(node, var)
+                if i != (len(variables)-1):
+                    self.append(', ')
+            self.append(')')
+
         elif func == 'length': # strlen
             self.append('strlen(')
             self.visit(node, node.args)
             self.append(')')
-        #strcat(asd, efg);
-        #asd := concat(asd, efg);
         elif func == 'concat': # strcat
             self.append('strcat(')
             self.visit(node.args, args[0])
             self.append(', ')
             self.visit(node.args, args[1])
             self.append(')')
-            self.indent()
+        elif func == 'ord':
+            self.visit(node.args, args[0])
         else:
             self.append(func)
             self.append('(')
             self.visit(node, node.args)
             self.append(')')
 
-    
+    #format_ = args[0].value
+            #matches = re.findall('%[dcs]', format_)
+            #format_ = re.sub('%[dcs]', '{}', format_)
+
+    #for i, a in enumerate(args[1:]):
+                #     if i > 0:
+                #         self.append(', ')
+                #     if matches[i] == '%c':
+                #         self.append('chr(')
+                #         self.visit(node.args, a)
+                #         self.append(')')
+                #     elif matches[i] == '%s':
+                #         self.append('"".join([chr(x) for x in ')
+                #         self.visit(node.args, a)
+                #         self.append('])')
+                #     else:
+                #         self.visit(node.args, a)
 
     def visit_MainBlock(self, parent, node):
         #self.append('int main() {')
