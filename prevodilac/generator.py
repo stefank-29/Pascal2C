@@ -255,11 +255,13 @@ class Generator(Visitor):
     def visit_MainBlock(self, parent, node):
         #self.append('int main() {')
         self.level += 1
-        for n in node.nodes:
+        for i, n in enumerate(node.nodes):
             self.indent()
             self.visit(node, n)
             self.append(';')
             self.newline()
+            if i % 3 == 0:
+                self.append('\r')
         self.append('\r')
         self.append('\treturn 0;\n')
         self.level -= 1
@@ -268,11 +270,13 @@ class Generator(Visitor):
     def visit_RepeatBlock(self, parent, node):
         self.append(' {\n')
         self.level += 1
-        for n in node.nodes:
+        for i, n in enumerate(node.nodes):
             self.indent()
             self.visit(node, n)
             self.append(';')
             self.newline()
+            if i % 3 == 0:
+                self.append('\r')
         self.level -= 1
         self.indent()
         self.append('}')
@@ -282,11 +286,13 @@ class Generator(Visitor):
     def visit_Block(self, parent, node):
         self.append(' {\n')
         self.level += 1
-        for n in node.nodes:
+        for i, n in enumerate(node.nodes):
             self.indent()
             self.visit(node, n)
             self.append(';')
             self.newline()
+            if i % 3 == 0:
+                self.append('\r')
         self.level -= 1
         self.indent()
         self.append('}')
