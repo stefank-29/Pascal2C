@@ -1,5 +1,6 @@
 int main() {
-	string asd, efg;
+	char asd[50] = {0};
+	char efg[50] = {0};
 	int len;
 	asd = qwerty;
 	write(Unesite string: );

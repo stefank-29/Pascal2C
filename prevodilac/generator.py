@@ -61,12 +61,19 @@ class Generator(Visitor):
         
     # char id[len] = {0}
     def visit_stringDecl(self, parent, node):
-        self.visit(node, node.type_)
-        self.append(' ')
         for i, id in enumerate(node.ids):
             if i > 0:
-                self.append(', ')
+                self.indent()
+            self.visit(node, node.type_)
+            self.append(' ')
             self.visit(node, id)
+            self.append('[')
+            self.visit(node, node.lenght)
+            self.append(']')
+            self.append(' = {0}')
+            if i != (len(node.ids)-1):
+                self.append(';')
+                self.newline()
         
 
     def visit_ArrayElem(self, parent, node):
@@ -346,7 +353,9 @@ class Generator(Visitor):
             self.append('float')
         elif node.value == 'boolean':
             self.append('int')
-        else : # za sad mozda dodati nesto za string ili char, mada su oni isti
+        elif node.value == 'string':
+            self.append('char')
+        else : 
             self.append(node.value)
 
     def visit_Integer(self, parent, node):
