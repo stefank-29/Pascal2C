@@ -86,10 +86,14 @@ class Generator(Visitor):
 
 
     def visit_Assign(self, parent, node):
+        if type(node.expr).__name__ == 'FuncCall': # ako je 
+            if node.expr.id_.value == 'concat':
+                self.visit(node, node.expr)
+                return
         self.visit(node, node.id_)
         self.append(' = ')
         self.visit(node, node.expr)
-        
+           
        
 
     def visit_If(self, parent, node):
@@ -163,10 +167,15 @@ class Generator(Visitor):
 
 
     # TODO ord() ne treba 
+    # concat
+    # length
+    # readln
+    # writeln
+    # write
     def visit_FuncCall(self, parent, node):
         func = node.id_.value
-        args = node.args.args
-        if func == 'printf':
+        args = node.args.args # niz argumenata
+        if func == 'write':
             format_ = args[0].value
             matches = re.findall('%[dcs]', format_)
             format_ = re.sub('%[dcs]', '{}', format_)
@@ -222,15 +231,18 @@ class Generator(Visitor):
                     self.append(' = [ord(x) for x in ')
                     self.visit(node.args, args[i + 1])
                     self.append(']')
-        elif func == 'strlen':
-            self.append('len(')
+        elif func == 'length': # strlen
+            self.append('strlen(')
             self.visit(node, node.args)
             self.append(')')
-        elif func == 'strcat':
+        #strcat(asd, efg);
+        #asd := concat(asd, efg);
+        elif func == 'concat': # strcat
+            self.append('strcat(')
             self.visit(node.args, args[0])
-            self.append(' += ')
+            self.append(', ')
             self.visit(node.args, args[1])
-            self.newline()
+            self.append(')')
             self.indent()
         else:
             self.append(func)
@@ -309,7 +321,7 @@ class Generator(Visitor):
         self.append('\r')
 
 
-    # TODO
+   
     def visit_Params(self, parent, node):
         for i, (k, v) in enumerate(node.params.items()): # ovde vrv nesto menjati jer je dict
             type_ = k
