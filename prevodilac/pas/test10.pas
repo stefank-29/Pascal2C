@@ -6,7 +6,7 @@ begin
 	asd := 'qwerty';
 
 	write('Unesite string: ');
-	readln(efg);
+	readln(efg, asd);
 	
 	writeln('Konkatenacija stringova: ', asd, ' + ', efg);
 	

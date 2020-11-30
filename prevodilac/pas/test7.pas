@@ -1,4 +1,4 @@
-	var
+var
 	n, i, j: integer;
 	space, star: char;
 
@@ -16,7 +16,7 @@ begin
 			write(space);
 		end;
 
-		for j := 1 to 2 * i - 1 do
+		for j := 1 to 2 * i + 1 do
 		begin
 			write(star);
 		end;

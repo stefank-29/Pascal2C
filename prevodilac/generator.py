@@ -4,6 +4,8 @@ from grapher import Visitor
 # TODO
 #? poziv funckija
 #? return u funkciji
+#? ; posle blokova za if
+#? arrayElem kao arg u printu
 
 class Generator(Visitor):
     def __init__(self, ast):
@@ -135,13 +137,21 @@ class Generator(Visitor):
             self.append(' <= ')
             self.visit(node, node.limit) 
             self.append('; ')
-            self.append('i = i + 1')
+            self.visit(node, node.init.id_)
+            self.append(' = ')
+            self.visit(node, node.init.id_)
+            self.append(' + 1') 
+            #self.append('i = i + 1')
         elif node.step.value == -1:
             self.visit(node, node.init.id_)
             self.append(' >= ')
             self.visit(node, node.limit) 
             self.append('; ')
-            self.append('i = i - 1')
+            #self.append('i = i - 1')
+            self.visit(node, node.init.id_)
+            self.append(' = ')
+            self.visit(node, node.init.id_)
+            self.append(' - 1')
         self.append(')')
         self.visit(node, node.block)
         
@@ -207,39 +217,32 @@ class Generator(Visitor):
             self.append(')')
         
         # TODO readln
+        # readln(efg);
+        # scanf("%s", efg);
+        # readln(c, i, r); 
+        # scanf("%c%d%f", & c, & i, &r);
         elif func == 'readln' or func == 'read':
-            for i, a in enumerate(args[1:]):
-                if i > 0:
+            self.append('scanf("')
+            for i, arg in enumerate(args):
+                for k, arr in self.varTypes.items():
+                        for val in arr:
+                            if val == arg.value:
+                                if k == 'string':
+                                    self.append('%s')
+                                elif k == 'integer':
+                                    self.append('%d')
+                                elif k == 'real':
+                                    self.append('%f')
+                                elif k == 'char':
+                                    self.append('%c')
+                                if i != (len(args)-1): # za poslednji bez _
+                                    self.append(' ')
+            self.append('", ')
+            for i, arg in enumerate(args):
+                self.visit(node, arg)
+                if i != (len(args)-1):
                     self.append(', ')
-                self.visit(node.args, a)
-            self.append(' = input()')
-            if len(args[1:]) > 1:
-                self.append('.split()')
-            format_ = args[0].value
-            matches = re.findall('%[dcs]', format_)
-            for i, m in enumerate(matches):
-                if m == '%d':
-                    self.newline()
-                    self.indent()
-                    self.visit(node.args, args[i + 1])
-                    self.append(' = int(')
-                    self.visit(node.args, args[i + 1])
-                    self.append(')')
-                elif m == '%c':
-                    self.newline()
-                    self.indent()
-                    self.visit(node.args, args[i + 1])
-                    self.append(' = ord(')
-                    self.visit(node.args, args[i + 1])
-                    self.append('[0])')
-                elif m == '%s':
-                    self.newline()
-                    self.indent()
-                    self.visit(node.args, args[i + 1])
-                    self.append(' = [ord(x) for x in ')
-                    self.visit(node.args, args[i + 1])
-                    self.append(']')
-
+            self.append(')')
         elif func == 'write':
             variables = []
             self.append('printf("')
@@ -310,7 +313,8 @@ class Generator(Visitor):
         for i, n in enumerate(node.nodes):
             self.indent()
             self.visit(node, n)
-            self.append(';')
+            if type(n).__name__ != 'For' and type(n).__name__ != 'While' and type(n).__name__ != 'RepeatUntil':
+                self.append(';')
             self.newline()
             if i % 3 == 0:
                 self.append('\r')
@@ -325,7 +329,8 @@ class Generator(Visitor):
         for i, n in enumerate(node.nodes):
             self.indent()
             self.visit(node, n)
-            self.append(';')
+            if type(n).__name__ != 'For' and type(n).__name__ != 'While' and type(n).__name__ != 'RepeatUntil':
+                self.append(';')
             self.newline()
             if i % 3 == 0:
                 self.append('\r')
@@ -341,7 +346,8 @@ class Generator(Visitor):
         for i, n in enumerate(node.nodes):
             self.indent()
             self.visit(node, n)
-            self.append(';')
+            if type(n).__name__ != 'For' and type(n).__name__ != 'While' and type(n).__name__ != 'RepeatUntil':
+                self.append(';')
             self.newline()
             if i % 3 == 0:
                 self.append('\r')
@@ -349,7 +355,7 @@ class Generator(Visitor):
         self.indent()
         self.append('}')
         self.append('\n\r')
-        
+
 
         
 
