@@ -4,8 +4,10 @@ from grapher import Visitor
 # TODO
 #? poziv funckija
 #? return u funkciji
+#? & u scanf
 #? ; posle blokova za if
-#? arrayElem kao arg u printu
+#? arrayElem kao arg u printu (cuvati u varTypes)
+#? ' ' write?
 
 class Generator(Visitor):
     def __init__(self, ast):
@@ -53,6 +55,10 @@ class Generator(Visitor):
     # int niz[5] = {1, 2, 3}
 
     def visit_ArrayDecl(self, parent, node):
+        v = self.varTypes.get(node.type_.value, []) 
+        v.append(node.id_.value)
+        self.varTypes[node.type_.value] = v
+        # ----------
         self.visit(node, node.type_)
         self.append(' ')
         self.visit(node, node.id_)
@@ -194,6 +200,9 @@ class Generator(Visitor):
             for arg in args:
                 if type(arg).__name__ == 'String':
                     self.append(arg.value)
+                elif type(arg).__name__ == 'Char':
+                    if arg.value == ' ':
+                        self.append(arg.value)
                 elif type(arg).__name__ == 'Id':
                     variables.append(arg)
                     for k, arr in self.varTypes.items():
@@ -225,18 +234,33 @@ class Generator(Visitor):
             self.append('scanf("')
             for i, arg in enumerate(args):
                 for k, arr in self.varTypes.items():
-                        for val in arr:
-                            if val == arg.value:
-                                if k == 'string':
-                                    self.append('%s')
-                                elif k == 'integer':
-                                    self.append('%d')
-                                elif k == 'real':
-                                    self.append('%f')
-                                elif k == 'char':
-                                    self.append('%c')
-                                if i != (len(args)-1): # za poslednji bez _
-                                    self.append(' ')
+                        for val in arr: 
+                            if type(arg).__name__ != 'ArrayElem':
+                                if val == arg.value:
+                                    if k == 'string':
+                                        self.append('%s')
+                                    elif k == 'integer':
+                                        self.append('%d')
+                                    elif k == 'real':
+                                        self.append('%f')
+                                    elif k == 'char':
+                                        self.append('%c')
+                                    if i != (len(args)-1): # za poslednji bez _
+                                        self.append(' ')
+                            else: # TODO
+                                print(arg.id_.value, val)
+                                if val == arg.id_.value:
+                                    if k == 'string':
+                                        self.append('%s')
+                                    elif k == 'integer':
+                                        self.append('%d')
+                                    elif k == 'real':
+                                        self.append('%f')
+                                    elif k == 'char':
+                                        self.append('%c')
+                                    if i != (len(args)-1): # za poslednji bez _
+                                        self.append(' ')
+                                
             self.append('", ')
             for i, arg in enumerate(args):
                 self.visit(node, arg)
@@ -249,6 +273,9 @@ class Generator(Visitor):
             for arg in args:
                 if type(arg).__name__ == 'String':
                     self.append(arg.value)
+                elif type(arg).__name__ == 'Char':
+                    if arg.value == ' ':
+                        self.append(arg.value)
                 elif type(arg).__name__ == 'Id':
                     variables.append(arg)
                     for k, arr in self.varTypes.items():
@@ -313,7 +340,7 @@ class Generator(Visitor):
         for i, n in enumerate(node.nodes):
             self.indent()
             self.visit(node, n)
-            if type(n).__name__ != 'For' and type(n).__name__ != 'While' and type(n).__name__ != 'RepeatUntil':
+            if type(n).__name__ != 'For' and type(n).__name__ != 'While' and type(n).__name__ != 'RepeatUntil' and type(n).__name__ != 'If':
                 self.append(';')
             self.newline()
             if i % 3 == 0:
@@ -329,7 +356,7 @@ class Generator(Visitor):
         for i, n in enumerate(node.nodes):
             self.indent()
             self.visit(node, n)
-            if type(n).__name__ != 'For' and type(n).__name__ != 'While' and type(n).__name__ != 'RepeatUntil':
+            if type(n).__name__ != 'For' and type(n).__name__ != 'While' and type(n).__name__ != 'RepeatUntil' and type(n).__name__ != 'If':
                 self.append(';')
             self.newline()
             if i % 3 == 0:
@@ -346,7 +373,7 @@ class Generator(Visitor):
         for i, n in enumerate(node.nodes):
             self.indent()
             self.visit(node, n)
-            if type(n).__name__ != 'For' and type(n).__name__ != 'While' and type(n).__name__ != 'RepeatUntil':
+            if type(n).__name__ != 'For' and type(n).__name__ != 'While' and type(n).__name__ != 'RepeatUntil' and type(n).__name__ != 'If':
                 self.append(';')
             self.newline()
             if i % 3 == 0:
