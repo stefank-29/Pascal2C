@@ -2,12 +2,8 @@ import re
 from grapher import Visitor
 
 # TODO
-#? poziv funckija
 #? return u funkciji
-#? & u scanf
-#? ; posle blokova za if
-#? arrayElem kao arg u printu (cuvati u varTypes)
-#? ' ' write?
+
 
 class Generator(Visitor):
     def __init__(self, ast):
@@ -198,6 +194,9 @@ class Generator(Visitor):
             variables = []
             self.append('printf("')
             for arg in args:
+                if type(arg).__name__ == 'BinOp': # ako je expr arg u writeln
+                    variables.append(arg)
+                    self.append('%d')                 
                 if type(arg).__name__ == 'String':
                     self.append(arg.value)
                 elif type(arg).__name__ == 'Char':
@@ -224,12 +223,7 @@ class Generator(Visitor):
                 if i != (len(variables)-1):
                     self.append(', ')
             self.append(')')
-        
-        # TODO readln
-        # readln(efg);
-        # scanf("%s", efg);
-        # readln(c, i, r); 
-        # scanf("%c%d%f", & c, & i, &r);
+
         elif func == 'readln' or func == 'read':
             self.append('scanf("')
             for i, arg in enumerate(args):
@@ -247,8 +241,7 @@ class Generator(Visitor):
                                         self.append('%c')
                                     if i != (len(args)-1): # za poslednji bez _
                                         self.append(' ')
-                            else: # TODO
-                                print(arg.id_.value, val)
+                            else: 
                                 if val == arg.id_.value:
                                     if k == 'string':
                                         self.append('%s')
@@ -263,6 +256,7 @@ class Generator(Visitor):
                                 
             self.append('", ')
             for i, arg in enumerate(args):
+                self.append('&')
                 self.visit(node, arg)
                 if i != (len(args)-1):
                     self.append(', ')
@@ -271,6 +265,9 @@ class Generator(Visitor):
             variables = []
             self.append('printf("')
             for arg in args:
+                if type(arg).__name__ == 'BinOp': # ako je expr arg u writeln
+                    variables.append(arg)
+                    self.append('%d')     
                 if type(arg).__name__ == 'String':
                     self.append(arg.value)
                 elif type(arg).__name__ == 'Char':
@@ -316,23 +313,30 @@ class Generator(Visitor):
             self.visit(node, node.args)
             self.append(')')
 
-    #format_ = args[0].value
-            #matches = re.findall('%[dcs]', format_)
-            #format_ = re.sub('%[dcs]', '{}', format_)
-
-    #for i, a in enumerate(args[1:]):
-                #     if i > 0:
-                #         self.append(', ')
-                #     if matches[i] == '%c':
-                #         self.append('chr(')
-                #         self.visit(node.args, a)
-                #         self.append(')')
-                #     elif matches[i] == '%s':
-                #         self.append('"".join([chr(x) for x in ')
-                #         self.visit(node.args, a)
-                #         self.append('])')
-                #     else:
-                #         self.visit(node.args, a)
+    #? hardkodovano ako zatreba
+    #   for k, arr in self.varTypes.items():
+    #                     for val in arr:
+    #                         if val == getattr(arg.first, 'value') if type(arg.first).__name__ != 'BinOp' else '' or val == getattr(arg.second, 'value') if type(arg.second).__name__ != 'BinOp' else '':
+    #                             if k == 'string':
+    #                                 self.append('%s')
+    #                             elif k == 'integer':
+    #                                 self.append('%d')
+    #                             elif k == 'real':
+    #                                 self.append('%f')
+    #                             elif k == 'char':
+    #                                 self.append('%c')
+    #                             break
+    #                         else:
+    #                             if val == getattr(arg.first.first, 'value') if type(arg.first.first).__name__ != 'BinOp' else '' or val == getattr(arg.first.second, 'value') if type(arg.first.second).__name__ != 'BinOp' else '' and val == getattr(arg.second.first, 'value') if type(arg.second.first).__name__ != 'BinOp' else '' or val == getattr(arg.second.second, 'value') if type(arg.second.second).__name__ != 'BinOp' else '':
+    #                                 if k == 'string':
+    #                                     self.append('%s')
+    #                                 elif k == 'integer':
+    #                                     self.append('%d')
+    #                                 elif k == 'real':
+    #                                     self.append('%f')
+    #                                 elif k == 'char':
+    #                                     self.append('%c')
+    #                                 break
 
     def visit_MainBlock(self, parent, node):
         #self.append('int main() {')

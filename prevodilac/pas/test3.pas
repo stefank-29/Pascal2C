@@ -3,9 +3,9 @@ begin
 	writeln(a, ' ', b);
 end;
 
-function fun2(a, b: integer) : integer;
+function fun2(x, y: integer) : integer;
 begin
-	fun2 := a + b;
+	fun2 := x + y;
 end;
 
 function fun3(p, q, r: integer) : integer;
