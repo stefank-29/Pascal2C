@@ -1,9 +1,15 @@
 procedure fun(a, b: integer);
+var 
+	x: integer;
 begin
 	writeln(a, ' ', b);
+	readln(x);
+	writeln(x, ' ', b);
 end;
 
 function fun2(x, y: integer) : integer;
+var 
+	a: integer;
 begin
 	fun2 := x + y;
 end;

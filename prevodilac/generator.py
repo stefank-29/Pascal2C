@@ -181,12 +181,16 @@ class Generator(Visitor):
             params = ({par[0].value: [p.value for p in par[1]]})
         self.currFunction[node.id_.value] = params
         ############################
+        self.append('{ \n\r')
+        if node.declBlock != None: # ako fja ima var block
+            print(node.declBlock)
+            self.visit(node, node.declBlock)
         self.visit(node, node.block)
         self.currFunction.clear()
        
 
 
-        #TODO return od funkcije (poseban blok za funkciju)
+    
 
     def visit_ProcImpl(self, parent, node):
         self.append('void ')
@@ -194,9 +198,18 @@ class Generator(Visitor):
         self.append('(')
         self.visit(node, node.params)
         self.append(')')
+        ############################
+        for par in node.params.params.items():
+            params = ({par[0].value: [p.value for p in par[1]]})
+        self.currFunction[node.id_.value] = params
+        ############################
+        self.append('{ \n\r')
+        if node.declBlock != None: # ako proc ima var block
+            print(node.declBlock)
+            self.visit(node, node.declBlock)
         self.visit(node, node.block)
         self.newline()
-
+        self.currFunction.clear()
 
 
     def visit_FuncCall(self, parent, node):
@@ -366,9 +379,6 @@ class Generator(Visitor):
         self.append('\treturn 0;\n')
         self.level -= 1
         self.append('}')
-        # print(self.currFunction)
-        # print('----------------------')
-        # print(self.varTypes)
 
     def visit_RepeatBlock(self, parent, node):
         self.append(' {\n')
@@ -384,6 +394,23 @@ class Generator(Visitor):
         self.level -= 1
         self.indent()
         self.append('}')
+        self.append('\n\r')
+    
+    def visit_FuncBlock(self, parent, node):
+        #self.append(' {\n')
+        self.level += 1
+        for i, n in enumerate(node.nodes):
+            self.indent()
+            self.visit(node, n)
+            if type(n).__name__ != 'For' and type(n).__name__ != 'While' and type(n).__name__ != 'RepeatUntil' and type(n).__name__ != 'If':
+                self.append(';')
+            self.newline()
+            if i % 3 == 0:
+                self.append('\r')
+        self.level -= 1
+        self.indent()
+        self.append('}')
+        self.append('\n\r')
 
 
 
@@ -430,6 +457,7 @@ class Generator(Visitor):
             self.newline()
         self.level -= 1
         self.append('\r')
+        print('asdsaasd')
 
 
 

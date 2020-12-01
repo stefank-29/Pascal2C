@@ -142,7 +142,7 @@ class Parser:
             self.eat(Class.VAR)
             declBlock = self.declBlock()
         self.eat(Class.BEGIN)
-        block = self.block() # TODO func block
+        block = self.funcBlock() 
         self.eat(Class.END)
         self.eat(Class.SEMICOLON)
         return FuncImpl(type_, id_, params, declBlock, block)
@@ -160,7 +160,7 @@ class Parser:
             self.eat(Class.VAR)
             declBlock = self.declBlock()
         self.eat(Class.BEGIN)
-        block = self.block()
+        block = self.funcBlock()
         self.eat(Class.END)
         self.eat(Class.SEMICOLON)
         return ProcImpl(id_, params, declBlock, block)
@@ -291,7 +291,30 @@ class Parser:
                 self.die_deriv(self.block.__name__)
         return MainBlock(nodes)
 
-    
+    def funcBlock(self):
+        nodes = []
+        while self.curr.class_ != Class.END:
+            if self.curr.class_ == Class.IF:
+                nodes.append(self.if_())
+            elif self.curr.class_ == Class.WHILE:
+                nodes.append(self.while_())
+            elif self.curr.class_ == Class.FOR:
+                nodes.append(self.for_())
+            elif self.curr.class_ == Class.REPEAT:
+                nodes.append(self.repeat_until())
+            elif self.curr.class_ == Class.BREAK:
+                nodes.append(self.break_())
+            elif self.curr.class_ == Class.CONTINUE:
+                nodes.append(self.continue_())
+            elif self.curr.class_ == Class.EXIT:
+                nodes.append(self.exit())
+            elif self.curr.class_ == Class.ID:
+                nodes.append(self.id_())
+                self.eat(Class.SEMICOLON)
+            else:
+                self.die_deriv(self.block.__name__)
+        return FuncBlock(nodes)
+
     def declBlock(self):
         nodes = []
         while self.curr.class_ != Class.BEGIN:  
@@ -304,6 +327,7 @@ class Parser:
             nodes.append(self.decl())
         return MainVarBlock(nodes)
 
+    
     # (argument(s): type1; argument(s): type2; ...)
     def params(self):
         params = {}

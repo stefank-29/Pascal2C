@@ -1,11 +1,15 @@
-void fun(int a, int b) {
-	printf(" \n", a, b);
+void fun(int a, int b){ 
+	int x;
+	printf(" \n", a, b);
+	scanf("%d", &x);
+	printf("%d \n", x, b);
+}
+int fun2(int x, int y){ 
+	int a;
+	return x + y;
 }
-int fun2(int x, int y) {
-	return x + y;
-}
-int fun3(int p, int q, int r) {
-	return q + r;
+int fun3(int p, int q, int r){ 
+	return q + r;
 }
 int main() {
 	int x, y, i;
