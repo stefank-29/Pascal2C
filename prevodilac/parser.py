@@ -142,7 +142,7 @@ class Parser:
             self.eat(Class.VAR)
             declBlock = self.declBlock()
         self.eat(Class.BEGIN)
-        block = self.block()
+        block = self.block() # TODO func block
         self.eat(Class.END)
         self.eat(Class.SEMICOLON)
         return FuncImpl(type_, id_, params, declBlock, block)

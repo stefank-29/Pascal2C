@@ -2,20 +2,21 @@ import re
 from grapher import Visitor
 
 # TODO
-#? return u funkciji
+#? write, writeln, readln u func
 
 class Generator(Visitor):
     def __init__(self, ast):
         self.ast = ast
         self.c = ""
         self.level = 0
-        self.varTypes = {}
+        self.varTypes = {} # tipovi promenljivih
+        self.currFunction = {}  # {ime : {tip: 'promenljive'}}
 
     # pomocne funkcije
-    def append(self, text): # dodaje string u kod 
+    def append(self, text): # dodaje string u kod
         self.c += str(text)
 
-    def newline(self): 
+    def newline(self):
         self.append('\n')
 
     def indent(self): # uvlacenje
@@ -33,9 +34,8 @@ class Generator(Visitor):
                 if flag != True:
                     self.append('int main() {')
                     self.newline()
-            #print(type(n).__name__)
             self.visit(node, n)
-  
+
     def visit_Decl(self, parent, node):
         self.visit(node, node.type_)
         self.append(' ')
@@ -46,11 +46,11 @@ class Generator(Visitor):
             if i > 0:
                 self.append(', ')
             self.visit(node, id)
-     
+
     # int niz[5] = {1, 2, 3}
 
     def visit_ArrayDecl(self, parent, node):
-        v = self.varTypes.get(node.type_.value, []) 
+        v = self.varTypes.get(node.type_.value, [])
         v.append(node.id_.value)
         self.varTypes[node.type_.value] = v
         # ----------
@@ -65,7 +65,7 @@ class Generator(Visitor):
             self.append(' = {')
             self.visit(node, node.elems)
             self.append('}')
-        
+
     # char id[len] = {0}
     def visit_stringDecl(self, parent, node):
         for i, id in enumerate(node.ids):
@@ -81,30 +81,35 @@ class Generator(Visitor):
             if i != (len(node.ids)-1):
                 self.append(';')
                 self.newline()
-            v = self.varTypes.get(node.type_.value, []) 
+            v = self.varTypes.get(node.type_.value, [])
             v.append(id.value)
             self.varTypes[node.type_.value] = v
-        
+
 
     def visit_ArrayElem(self, parent, node):
         self.visit(node, node.id_)
         self.append('[')
         self.visit(node, node.index)
         self.append(']')
-        
+
 
 
 
     def visit_Assign(self, parent, node):
-        if type(node.expr).__name__ == 'FuncCall': # ako je 
+        if type(node.expr).__name__ == 'FuncCall': # ako je concat bez assign-a
             if node.expr.id_.value == 'concat':
+                self.visit(node, node.expr)
+                return
+        if type(node.id_).__name__ == 'Id': #? ako se levi poklapa sa imenom fje
+            if node.id_.value == list(self.currFunction.keys())[0] if self.currFunction.keys() else '':
+                self.append('return ')
                 self.visit(node, node.expr)
                 return
         self.visit(node, node.id_)
         self.append(' = ')
         self.visit(node, node.expr)
-           
-       
+
+
 
     def visit_If(self, parent, node):
         self.append('if (')
@@ -117,15 +122,15 @@ class Generator(Visitor):
             self.visit(node, node.false)
 
 
-    def visit_While(self, parent, node): 
+    def visit_While(self, parent, node):
         self.append('while (')
         self.visit(node, node.cond) # cond je BinOp (expr - Operator - drugi expr)
         self.append(')')
         self.newline()
         self.visit(node, node.block)
 
-    # for i := 1 to n do        
-    # for (i = 1 ; i <= n ; i++)              
+    # for i := 1 to n do
+    # for (i = 1 ; i <= n ; i++)
     def visit_For(self, parent, node):
         #? init je assign
         #? cond (op1 - operator - op2) bez ';'
@@ -136,17 +141,17 @@ class Generator(Visitor):
         if node.step.value == 1:
             self.visit(node, node.init.id_)
             self.append(' <= ')
-            self.visit(node, node.limit) 
+            self.visit(node, node.limit)
             self.append('; ')
             self.visit(node, node.init.id_)
             self.append(' = ')
             self.visit(node, node.init.id_)
-            self.append(' + 1') 
+            self.append(' + 1')
             #self.append('i = i + 1')
         elif node.step.value == -1:
             self.visit(node, node.init.id_)
             self.append(' >= ')
-            self.visit(node, node.limit) 
+            self.visit(node, node.limit)
             self.append('; ')
             #self.append('i = i - 1')
             self.visit(node, node.init.id_)
@@ -155,7 +160,7 @@ class Generator(Visitor):
             self.append(' - 1')
         self.append(')')
         self.visit(node, node.block)
-        
+
 
     def visit_RepeatUntil(self, parent, node): # do while
         self.append('do')
@@ -171,8 +176,17 @@ class Generator(Visitor):
         self.append('(')
         self.visit(node, node.params)
         self.append(')')
+        ############################
+        for par in node.params.params.items():
+            params = ({par[0].value: [p.value for p in par[1]]})
+        self.currFunction[node.id_.value] = params
+        ############################
         self.visit(node, node.block)
-        #TODO return od funkcije
+        self.currFunction.clear()
+       
+
+
+        #TODO return od funkcije (poseban blok za funkciju)
 
     def visit_ProcImpl(self, parent, node):
         self.append('void ')
@@ -184,7 +198,7 @@ class Generator(Visitor):
         self.newline()
 
 
-   
+
     def visit_FuncCall(self, parent, node):
         func = node.id_.value
         args = node.args.args # niz argumenata
@@ -194,10 +208,9 @@ class Generator(Visitor):
             for arg in args:
                 if type(arg).__name__ == 'BinOp': # ako je expr arg u writeln
                     variables.append(arg)
-                    self.append('%d')      
+                    self.append('%d')
                 if type(arg).__name__ == 'ArrayElem':
-                    print('nizzzzz') 
-                    variables.append(arg)  
+                    variables.append(arg)
                     for k, arr in self.varTypes.items():
                         for val in arr:
                             if val == arg.id_.value:
@@ -208,7 +221,7 @@ class Generator(Visitor):
                                 elif k == 'real':
                                     self.append('%f')
                                 elif k == 'char':
-                                    self.append('%c')          
+                                    self.append('%c')
                 if type(arg).__name__ == 'String':
                     self.append(arg.value)
                 elif type(arg).__name__ == 'Char':
@@ -240,7 +253,7 @@ class Generator(Visitor):
             self.append('scanf("')
             for i, arg in enumerate(args):
                 for k, arr in self.varTypes.items():
-                        for val in arr: 
+                        for val in arr:
                             if type(arg).__name__ != 'ArrayElem':
                                 if val == arg.value:
                                     if k == 'string':
@@ -253,7 +266,7 @@ class Generator(Visitor):
                                         self.append('%c')
                                     if i != (len(args)-1): # za poslednji bez _
                                         self.append(' ')
-                            else: 
+                            else:
                                 if val == arg.id_.value:
                                     if k == 'string':
                                         self.append('%s')
@@ -265,7 +278,7 @@ class Generator(Visitor):
                                         self.append('%c')
                                     if i != (len(args)-1): # za poslednji bez _
                                         self.append(' ')
-                                
+
             self.append('", ')
             for i, arg in enumerate(args):
                 self.append('&')
@@ -279,10 +292,9 @@ class Generator(Visitor):
             for arg in args:
                 if type(arg).__name__ == 'BinOp': # ako je expr arg u writeln
                     variables.append(arg)
-                    self.append('%d')   
+                    self.append('%d')
                 if type(arg).__name__ == 'ArrayElem':
-                    print('nizzzzz') 
-                    variables.append(arg)  
+                    variables.append(arg)
                     for k, arr in self.varTypes.items():
                         for val in arr:
                             if val == arg.id_.value:
@@ -339,31 +351,6 @@ class Generator(Visitor):
             self.visit(node, node.args)
             self.append(')')
 
-    #? hardkodovano ako zatreba
-    #   for k, arr in self.varTypes.items():
-    #                     for val in arr:
-    #                         if val == getattr(arg.first, 'value') if type(arg.first).__name__ != 'BinOp' else '' or val == getattr(arg.second, 'value') if type(arg.second).__name__ != 'BinOp' else '':
-    #                             if k == 'string':
-    #                                 self.append('%s')
-    #                             elif k == 'integer':
-    #                                 self.append('%d')
-    #                             elif k == 'real':
-    #                                 self.append('%f')
-    #                             elif k == 'char':
-    #                                 self.append('%c')
-    #                             break
-    #                         else:
-    #                             if val == getattr(arg.first.first, 'value') if type(arg.first.first).__name__ != 'BinOp' else '' or val == getattr(arg.first.second, 'value') if type(arg.first.second).__name__ != 'BinOp' else '' and val == getattr(arg.second.first, 'value') if type(arg.second.first).__name__ != 'BinOp' else '' or val == getattr(arg.second.second, 'value') if type(arg.second.second).__name__ != 'BinOp' else '':
-    #                                 if k == 'string':
-    #                                     self.append('%s')
-    #                                 elif k == 'integer':
-    #                                     self.append('%d')
-    #                                 elif k == 'real':
-    #                                     self.append('%f')
-    #                                 elif k == 'char':
-    #                                     self.append('%c')
-    #                                 break
-
     def visit_MainBlock(self, parent, node):
         #self.append('int main() {')
         self.level += 1
@@ -379,6 +366,9 @@ class Generator(Visitor):
         self.append('\treturn 0;\n')
         self.level -= 1
         self.append('}')
+        # print(self.currFunction)
+        # print('----------------------')
+        # print(self.varTypes)
 
     def visit_RepeatBlock(self, parent, node):
         self.append(' {\n')
@@ -395,7 +385,7 @@ class Generator(Visitor):
         self.indent()
         self.append('}')
 
-    
+
 
     def visit_Block(self, parent, node):
         self.append(' {\n')
@@ -414,7 +404,7 @@ class Generator(Visitor):
         self.append('\n\r')
 
 
-        
+
 
     def visit_MainVarBlock(self, parent, node):
         self.append('int main() {')
@@ -427,7 +417,7 @@ class Generator(Visitor):
             self.newline()
         self.level -= 1
         self.append('\r')
-        
+
 
 
     def visit_VarBlock(self, parent, node):
@@ -442,7 +432,7 @@ class Generator(Visitor):
         self.append('\r')
 
 
-   
+
     def visit_Params(self, parent, node):
         for i, (k, v) in enumerate(node.params.items()): # ovde vrv nesto menjati jer je dict
             type_ = k
@@ -453,7 +443,7 @@ class Generator(Visitor):
                 self.visit(node, id_)
                 if index != (len(ids)-1) or i != (len(node.params.items())-1):
                     self.append(', ')
-            
+
 
     def visit_Args(self, parent, node):
         for i, a in enumerate(node.args):
@@ -488,7 +478,7 @@ class Generator(Visitor):
             self.append('int')
         elif node.value == 'string':
             self.append('char')
-        else : 
+        else :
             self.append(node.value)
 
     def visit_Integer(self, parent, node):
@@ -546,3 +536,31 @@ class Generator(Visitor):
         with open(path, 'w') as source:
             source.write(self.c)
         return path
+
+
+
+
+    #? hardkodovano ako zatreba
+    #   for k, arr in self.varTypes.items():
+    #                     for val in arr:
+    #                         if val == getattr(arg.first, 'value') if type(arg.first).__name__ != 'BinOp' else '' or val == getattr(arg.second, 'value') if type(arg.second).__name__ != 'BinOp' else '':
+    #                             if k == 'string':
+    #                                 self.append('%s')
+    #                             elif k == 'integer':
+    #                                 self.append('%d')
+    #                             elif k == 'real':
+    #                                 self.append('%f')
+    #                             elif k == 'char':
+    #                                 self.append('%c')
+    #                             break
+    #                         else:
+    #                             if val == getattr(arg.first.first, 'value') if type(arg.first.first).__name__ != 'BinOp' else '' or val == getattr(arg.first.second, 'value') if type(arg.first.second).__name__ != 'BinOp' else '' and val == getattr(arg.second.first, 'value') if type(arg.second.first).__name__ != 'BinOp' else '' or val == getattr(arg.second.second, 'value') if type(arg.second.second).__name__ != 'BinOp' else '':
+    #                                 if k == 'string':
+    #                                     self.append('%s')
+    #                                 elif k == 'integer':
+    #                                     self.append('%d')
+    #                                 elif k == 'real':
+    #                                     self.append('%f')
+    #                                 elif k == 'char':
+    #                                     self.append('%c')
+    #                                 break
