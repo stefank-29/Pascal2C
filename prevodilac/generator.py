@@ -10,6 +10,7 @@ class Generator(Visitor):
         self.c = ""
         self.level = 0
         self.varTypes = {} # tipovi promenljivih
+        self.currFuncVarTypes = {}
         self.currFunction = {}  # {ime : {tip: 'promenljive'}}
 
     # pomocne funkcije
@@ -166,7 +167,13 @@ class Generator(Visitor):
         self.append('do')
         self.visit(node, node.block)
         self.append(' while (')
-        self.visit(node, node.cond)
+        if type(node.cond).__name__ == 'Boolean':
+            if node.cond.value == 'true':
+                self.append('0')
+            elif node.cond.value == 'false':
+                self.append('1')
+        else:
+            self.visit(node, node.cond)
         self.append(');')
 
     def visit_FuncImpl(self, parent, node):
@@ -178,12 +185,16 @@ class Generator(Visitor):
         self.append(')')
         ############################
         for par in node.params.params.items():
+            v = self.currFuncVarTypes.get(par[0].value, []) # ako nema jos vrati prazan niz
+            v.append([p.value for p in par[1]])
+            self.currFuncVarTypes[node.type_.value] = v
+        ############################
+        for par in node.params.params.items():
             params = ({par[0].value: [p.value for p in par[1]]})
         self.currFunction[node.id_.value] = params
         ############################
         self.append('{ \n\r')
         if node.declBlock != None: # ako fja ima var block
-            print(node.declBlock)
             self.visit(node, node.declBlock)
         self.visit(node, node.block)
         self.currFunction.clear()
@@ -457,7 +468,6 @@ class Generator(Visitor):
             self.newline()
         self.level -= 1
         self.append('\r')
-        print('asdsaasd')
 
 
 
@@ -486,10 +496,10 @@ class Generator(Visitor):
             self.visit(node, e)
 
     def visit_Break(self, parent, node):
-        self.append('break;')
+        self.append('break')
 
     def visit_Continue(self, parent, node):
-        self.append('continue;')
+        self.append('continue')
 
     def visit_Exit(self, parent, node):
         self.append('return')
