@@ -1,16 +1,21 @@
-void fun(int a, int b){ 
+void fun(int a, int b, char s){ 
 	int x;
-	printf(" \n", a, b);
+	char c;
+	printf("%d %d %c%d\n", a, b, s, x);
 	scanf("%d", &x);
-	printf("%d \n", x, b);
-}
-int fun2(int x, int y){ 
+	scanf("%c", &c);
+	printf("%d %d\n", x, b);
+}
+int fun2(int x, int y, char c){ 
 	int a;
+	printf("%d%d%d%d%c%c\n", a, x, y, c);
 	return x + y;
-}
+}
 int fun3(int p, int q, int r){ 
+	int a;
 	return q + r;
-}
+	printf("%d %d%d%d\n", q, r, a);
+}
 int main() {
 	int x, y, i;
 	int arr1[3];

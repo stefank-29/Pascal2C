@@ -148,13 +148,11 @@ class Generator(Visitor):
             self.append(' = ')
             self.visit(node, node.init.id_)
             self.append(' + 1')
-            #self.append('i = i + 1')
         elif node.step.value == -1:
             self.visit(node, node.init.id_)
             self.append(' >= ')
             self.visit(node, node.limit)
             self.append('; ')
-            #self.append('i = i - 1')
             self.visit(node, node.init.id_)
             self.append(' = ')
             self.visit(node, node.init.id_)
@@ -183,43 +181,37 @@ class Generator(Visitor):
         self.append('(')
         self.visit(node, node.params)
         self.append(')')
-        ############################
-        for par in node.params.params.items():
-            v = self.currFuncVarTypes.get(par[0].value, []) # ako nema jos vrati prazan niz
-            v.append([p.value for p in par[1]])
-            self.currFuncVarTypes[node.type_.value] = v
-        ############################
+        for par in node.params.params.items(): # tipovi var u fji
+            v = ([p.value for p in par[1]])
+            self.currFuncVarTypes[par[0].value] = v
         for par in node.params.params.items():
             params = ({par[0].value: [p.value for p in par[1]]})
-        self.currFunction[node.id_.value] = params
-        ############################
+            self.currFunction[node.id_.value] = params
         self.append('{ \n\r')
         if node.declBlock != None: # ako fja ima var block
             self.visit(node, node.declBlock)
         self.visit(node, node.block)
+        self.currFuncVarTypes.clear()
         self.currFunction.clear()
        
-
-
-    
-
     def visit_ProcImpl(self, parent, node):
         self.append('void ')
         self.append(node.id_.value)
         self.append('(')
         self.visit(node, node.params)
         self.append(')')
-        ############################
+        for par in node.params.params.items():
+            v = ([p.value for p in par[1]])
+            self.currFuncVarTypes[par[0].value] = v
         for par in node.params.params.items():
             params = ({par[0].value: [p.value for p in par[1]]})
-        self.currFunction[node.id_.value] = params
-        ############################
+            self.currFunction[node.id_.value] = params
         self.append('{ \n\r')
         if node.declBlock != None: # ako proc ima var block
-            print(node.declBlock)
             self.visit(node, node.declBlock)
         self.visit(node, node.block)
         self.newline()
+        self.currFuncVarTypes.clear()
         self.currFunction.clear()
 
 
@@ -264,6 +256,18 @@ class Generator(Visitor):
                                     self.append('%f')
                                 elif k == 'char':
                                     self.append('%c')
+                    print(self.currFuncVarTypes)
+                    for k, arr in self.currFuncVarTypes.items():
+                        for val in arr:
+                            if val == arg.value:
+                                if k == 'string':
+                                    self.append('%s')
+                                elif k == 'integer':
+                                    self.append('%d')
+                                elif k == 'real':
+                                    self.append('%f')
+                                elif k == 'char':
+                                    self.append('%c')    
             self.append('\\n"')
             if len(variables) > 0:
                 self.append(', ')
@@ -348,6 +352,17 @@ class Generator(Visitor):
                                     self.append('%f')
                                 elif k == 'char':
                                     self.append('%c')
+                    for k, arr in self.currFuncVarTypes.items():
+                        for val in arr:
+                            if val == arg.value:
+                                if k == 'string':
+                                    self.append('%s')
+                                elif k == 'integer':
+                                    self.append('%d')
+                                elif k == 'real':
+                                    self.append('%f')
+                                elif k == 'char':
+                                    self.append('%c')    
             self.append('"')
             if len(variables) > 0:
                 self.append(', ')

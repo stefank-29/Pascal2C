@@ -1,22 +1,28 @@
-procedure fun(a, b: integer);
+procedure fun(a, b: integer; s: char);
 var 
 	x: integer;
+	c: char;
 begin
-	writeln(a, ' ', b);
+	writeln(a, ' ', b, ' ', s, x);
 	readln(x);
+	readln(c);
 	writeln(x, ' ', b);
 end;
 
-function fun2(x, y: integer) : integer;
+function fun2(x, y: integer; c: char) : integer;
 var 
 	a: integer;
 begin
+	writeln(a, x, y, c);
 	fun2 := x + y;
 end;
 
 function fun3(p, q, r: integer) : integer;
+var 
+	a: integer;
 begin
 	fun3 := q + r;
+	writeln(q, ' ', r, a);
 end;
 
 var
