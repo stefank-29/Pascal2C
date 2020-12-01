@@ -4,7 +4,6 @@ from grapher import Visitor
 # TODO
 #? return u funkciji
 
-
 class Generator(Visitor):
     def __init__(self, ast):
         self.ast = ast
@@ -185,7 +184,6 @@ class Generator(Visitor):
         self.newline()
 
 
-    # readln
    
     def visit_FuncCall(self, parent, node):
         func = node.id_.value
@@ -196,7 +194,21 @@ class Generator(Visitor):
             for arg in args:
                 if type(arg).__name__ == 'BinOp': # ako je expr arg u writeln
                     variables.append(arg)
-                    self.append('%d')                 
+                    self.append('%d')      
+                if type(arg).__name__ == 'ArrayElem':
+                    print('nizzzzz') 
+                    variables.append(arg)  
+                    for k, arr in self.varTypes.items():
+                        for val in arr:
+                            if val == arg.id_.value:
+                                if k == 'string':
+                                    self.append('%s')
+                                elif k == 'integer':
+                                    self.append('%d')
+                                elif k == 'real':
+                                    self.append('%f')
+                                elif k == 'char':
+                                    self.append('%c')          
                 if type(arg).__name__ == 'String':
                     self.append(arg.value)
                 elif type(arg).__name__ == 'Char':
@@ -267,7 +279,21 @@ class Generator(Visitor):
             for arg in args:
                 if type(arg).__name__ == 'BinOp': # ako je expr arg u writeln
                     variables.append(arg)
-                    self.append('%d')     
+                    self.append('%d')   
+                if type(arg).__name__ == 'ArrayElem':
+                    print('nizzzzz') 
+                    variables.append(arg)  
+                    for k, arr in self.varTypes.items():
+                        for val in arr:
+                            if val == arg.id_.value:
+                                if k == 'string':
+                                    self.append('%s')
+                                elif k == 'integer':
+                                    self.append('%d')
+                                elif k == 'real':
+                                    self.append('%f')
+                                elif k == 'char':
+                                    self.append('%c')
                 if type(arg).__name__ == 'String':
                     self.append(arg.value)
                 elif type(arg).__name__ == 'Char':
