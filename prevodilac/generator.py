@@ -1,9 +1,6 @@
 import re
 from grapher import Visitor
 
-# TODO
-#? write, writeln, readln u func
-
 class Generator(Visitor):
     def __init__(self, ast):
         self.ast = ast
@@ -181,7 +178,7 @@ class Generator(Visitor):
         self.append('(')
         self.visit(node, node.params)
         self.append(')')
-        for par in node.params.params.items(): # tipovi var u fji
+        for par in node.params.params.items():
             v = ([p.value for p in par[1]])
             self.currFuncVarTypes[par[0].value] = v
         for par in node.params.params.items():
@@ -191,8 +188,10 @@ class Generator(Visitor):
         if node.declBlock != None: # ako fja ima var block
             self.visit(node, node.declBlock)
         self.visit(node, node.block)
+        self.newline()
         self.currFuncVarTypes.clear()
         self.currFunction.clear()
+        self.varTypes.clear()
        
     def visit_ProcImpl(self, parent, node):
         self.append('void ')
@@ -213,6 +212,8 @@ class Generator(Visitor):
         self.newline()
         self.currFuncVarTypes.clear()
         self.currFunction.clear()
+        self.varTypes.clear()
+
 
 
     def visit_FuncCall(self, parent, node):
@@ -256,7 +257,10 @@ class Generator(Visitor):
                                     self.append('%f')
                                 elif k == 'char':
                                     self.append('%c')
+                    print(self.varTypes)
+                    print('--------------------')
                     print(self.currFuncVarTypes)
+                    print('\n')
                     for k, arr in self.currFuncVarTypes.items():
                         for val in arr:
                             if val == arg.value:

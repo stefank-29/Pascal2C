@@ -8,15 +8,17 @@ void fun(int a, int b, char s){
 }
 int fun2(int x, int y, char c){ 
 	int a;
-	printf("%d%d%d%d%c%c\n", a, x, y, c);
+	printf("%d%d%d%c\n", a, x, y, c);
 	return x + y;
+	scanf("%d", &a);
 }
-int fun3(int p, int q, int r){ 
+int fun3(int p, int q, int r){ 
 	int a;
 	return q + r;
-	printf("%d %d%d%d\n", q, r, a);
+	printf("%d %d%d\n", q, r, a);
+	scanf("%d", &a);
 }
-int main() {
+int main() {
 	int x, y, i;
 	int arr1[3];
 	int arr2[3] = {1, 23, 456};

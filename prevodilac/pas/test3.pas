@@ -15,6 +15,7 @@ var
 begin
 	writeln(a, x, y, c);
 	fun2 := x + y;
+	readln(a);
 end;
 
 function fun3(p, q, r: integer) : integer;
@@ -23,6 +24,7 @@ var
 begin
 	fun3 := q + r;
 	writeln(q, ' ', r, a);
+	readln(a);
 end;
 
 var
