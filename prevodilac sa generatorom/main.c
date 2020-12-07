@@ -1,22 +1,28 @@
-void check_arm(int x, int cj, int cd, int cs){ 
-	int arm;
-	if (x < 0) {
-		return;
-	}
-	arm = x == cj * cj * cj + cd * cd * cd + cs * cs * cs;
-	if (arm) {
-		printf("DA");
-	}
-	else  {
-		printf("NE");
-	}
-}
 int main() {
-	int broj, cj, cd, cs;
-	scanf("%d", &broj);
-	cj = broj % 10;
-	cd = broj / 10 % 10;
-	cs = broj / 100 % 10;
-	check_arm(broj, cj, cd, cs);
+	int a[100];
+	int n, ai, bi, ci, i;
+	bi = 1;
+	ci = 1;
+	scanf("%d", &n);
+	for (ai = 1; ai <= n; ai = ai + 1) {
+		scanf("%d", &a[ai]);
+	}
+	for (ai = 1; ai <= n; ai = ai + 1) {
+		if (a[ai] % 2 == 0) {
+			b[bi] = a[ai];
+			bi = bi + 1;
+		}
+		else  {
+			c[ci] = a[ai];
+			ci = ci + 1;
+		}
+	}
+	for (i = 1; i <= bi - 1; i = i + 1) {
+		printf(" ", b[i]);
+	}
+	printf("\n");
+	for (i = 1; i <= ci - 1; i = i + 1) {
+		printf(" ", c[i]);
+	}
 	return 0;
 }

@@ -1,8 +1,8 @@
 import re
 from grapher import Visitor
 
-# TODO
-# Funkcije za rad sa brojevima (inc, dec, ord, chr)
+# TODO 
+# Funkcije za rad sa brojevima (inc, dec, ord - samo bez, chr)
 # Funkcije za rad sa stringovima (length, insert)
 # scanf bez razmaka
 
@@ -248,8 +248,7 @@ class Generator(Visitor):
                 if type(arg).__name__ == 'String':
                     self.append(arg.value)
                 elif type(arg).__name__ == 'Char':
-                    if arg.value == ' ':
-                        self.append(arg.value)
+                    self.append(arg.value)
                 elif type(arg).__name__ == 'Id':
                     variables.append(arg)
                     for k, arr in self.varTypes.items():
@@ -347,8 +346,7 @@ class Generator(Visitor):
                 if type(arg).__name__ == 'String':
                     self.append(arg.value)
                 elif type(arg).__name__ == 'Char':
-                    if arg.value == ' ':
-                        self.append(arg.value)
+                    self.append(arg.value)
                 elif type(arg).__name__ == 'Id':
                     variables.append(arg)
                     for k, arr in self.varTypes.items():
