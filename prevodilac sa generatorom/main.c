@@ -1,28 +1,45 @@
+char cifra_stotina(char s){ 
+	if (s < 100) {
+		return '0';
+	}
+	else  {
+		return chr('0' + s / 100);
+	}
+}
+char cifra_desetica(char s){ 
+	if (s < 10) {
+		return '0';
+	}
+	else  {
+		return chr('0' + s / 10 % 10);
+	}
+}
+char cifra_jedinica(char s){ 
+	return chr('0' + s % 10);
+}
 int main() {
-	int a[100];
-	int n, ai, bi, ci, i;
-	bi = 1;
-	ci = 1;
-	scanf("%d", &n);
-	for (ai = 1; ai <= n; ai = ai + 1) {
-		scanf("%d", &a[ai]);
-	}
-	for (ai = 1; ai <= n; ai = ai + 1) {
-		if (a[ai] % 2 == 0) {
-			b[bi] = a[ai];
-			bi = bi + 1;
+	char s[100] = {0};
+	char t[100] = {0};
+	char ascii, tmp;
+	int i, j, len;
+	scanf("%s", &s);
+	i = 1;
+	j = 1;
+	len = strlen(s);
+	while (i <= len)
+ {
+		ascii = s[i];
+		inc(i);
+		tmp = cifra_stotina(ascii);
+		if (tmp != '0'  ||  tmp == '0'  &&  j > 1) {
+			insert(tmp, t, j);
+			inc(j);
 		}
-		else  {
-			c[ci] = a[ai];
-			ci = ci + 1;
-		}
-	}
-	for (i = 1; i <= bi - 1; i = i + 1) {
-		printf(" ", b[i]);
-	}
-	printf("\n");
-	for (i = 1; i <= ci - 1; i = i + 1) {
-		printf(" ", c[i]);
-	}
+		insert(cifra_desetica(ascii), t, j);
+		inc(j);
+		insert(cifra_jedinica(ascii), t, j);
+		inc(j);
+	}
+	printf("%s", t);
 	return 0;
 }

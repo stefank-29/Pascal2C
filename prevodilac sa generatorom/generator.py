@@ -2,7 +2,7 @@ import re
 from grapher import Visitor
 
 # TODO 
-# Funkcije za rad sa brojevima (inc, dec, ord - samo bez, chr)
+# Funkcije za rad sa brojevima (inc, dec, ord - samo bez, #? chr - valja isto bez)
 # Funkcije za rad sa stringovima (length, insert)
 # scanf bez razmaka
 
@@ -54,21 +54,26 @@ class Generator(Visitor):
     # int niz[5] = {1, 2, 3}
 
     def visit_ArrayDecl(self, parent, node):
-        v = self.varTypes.get(node.type_.value, [])
-        v.append(node.id_.value)
-        self.varTypes[node.type_.value] = v
-        # ----------
         self.visit(node, node.type_)
         self.append(' ')
-        self.visit(node, node.id_)
-        lenght = int(node.high.value) - int(node.low.value) + 1
-        self.append('[')
-        self.append(f'{lenght}')
-        self.append(']')
-        if node.elems is not None:
-            self.append(' = {')
-            self.visit(node, node.elems)
-            self.append('}')
+        for i, id in enumerate(node.ids):
+            v = self.varTypes.get(node.type_.value, [])
+            v.append(id.value)
+            self.varTypes[node.type_.value] = v
+            if i > 0:
+                self.append(', ')
+            self.visit(node, id)
+            lenght = int(node.high.value) - int(node.low.value) + 1
+            self.append('[')
+            self.append(f'{lenght}')
+            self.append(']')
+            if node.elems is not None:
+                self.append(' = {')
+                self.visit(node, node.elems)
+                self.append('}')
+
+        # ----------
+        
 
     # char id[len] = {0}
     def visit_stringDecl(self, parent, node):

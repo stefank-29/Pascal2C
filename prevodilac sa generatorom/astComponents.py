@@ -28,9 +28,9 @@ arr2: array [1..3] of integer = (1, 23, 456);
 size = high - low + 1
 '''
 class ArrayDecl(Node):
-    def __init__(self, type_, id_, low, high, elems):
+    def __init__(self, type_, ids, low, high, elems):
         self.type_ = type_
-        self.id_ = id_
+        self.ids = ids
         self.low = low
         self.high = high
         self.elems = elems

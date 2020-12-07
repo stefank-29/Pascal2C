@@ -110,7 +110,7 @@ class Parser:
             self.eat(Class.RBRACKET)
             self.eat(Class.OF)
             type_ = self.type_()
-            id_ = ids[0]
+           # id_ = ids[0]
 
             elems = None
             if self.curr.class_ == Class.EQ: # dodela vrednosti nizu = (1, 5, 7+3)
@@ -119,7 +119,7 @@ class Parser:
                 elems = self.elems()
                 self.eat(Class.RPAREN)
             self.eat(Class.SEMICOLON)
-            return ArrayDecl(type_, id_, low, high, elems)
+            return ArrayDecl(type_, ids, low, high, elems)
         else:
             lenght = Integer(100)
             type_ = self.type_()
@@ -520,6 +520,21 @@ class Parser:
             op = self.curr.lexeme
             self.eat(Class.GTE)
             second = self.expr()
+            return BinOp(op, first, second)
+        elif self.curr.class_ == Class.AND:
+            op = self.curr.lexeme
+            self.eat(Class.AND)
+            second = self.compare()
+            return BinOp(op, first, second)
+        elif self.curr.class_ == Class.OR:
+            op = self.curr.lexeme
+            self.eat(Class.OR)
+            second = self.compare()
+            return BinOp(op, first, second)
+        elif self.curr.class_ == Class.XOR:
+            op = self.curr.lexeme
+            self.eat(Class.XOR)
+            second = self.compare()
             return BinOp(op, first, second)
         else:
             return first

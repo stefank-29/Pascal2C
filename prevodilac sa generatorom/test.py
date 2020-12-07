@@ -2,7 +2,7 @@ from lexer import Lexer
 from parser import Parser
 from generator import Generator
 #from grapher import *
-id = '11'
+id = '15'
 path = f'./Datoteke/Druga faza/{id}/src.pas'
 with open(path, 'r') as source:
     text = source.read()
@@ -24,5 +24,5 @@ with open(path, 'r') as source:
 # for t in tokens:
 #     print(t)
 
-# TODO 1, 3, 5, 9 (writeln sa funccall)
+# TODO 1(zaokr), 3(chr), 5(chr), 9 (writeln sa funccall), 15(inc, dec, insert)
 
