@@ -1,30 +1,22 @@
-int main() {
-	int n, i, j, temp;
-	int niz[100];
-	printf("Unesite pozitivan ceo broj: ");
-	scanf("%d", &n);
-	for (i = 1; i <= n; i = i + 1) {
-		printf("Unesite ceo broj za %d. element niza: ", i);
-		scanf("%d", &niz[i]);
-	}
-	for (i = 1; i <= n; i = i + 1) {
-		for (j = i + 1; j <= n; j = j + 1) {
-			if (niz[i] > niz[j]) {
-				temp = niz[i];
-				niz[i] = niz[j];
-				niz[j] = temp;
-			}
-		}
+void check_arm(int x, int cj, int cd, int cs){ 
+	int arm;
+	if (x < 0) {
+		return;
 	}
-	printf("Sortirani niz: ");
-	for (i = 1; i <= n; i = i + 1) {
-		printf("%d", niz[i]);
-		if (i == n) {
-			printf("\n");
-		}
-		else  {
-			printf(" ");
-		}
-	}
+	arm = x == cj * cj * cj + cd * cd * cd + cs * cs * cs;
+	if (arm) {
+		printf("DA");
+	}
+	else  {
+		printf("NE");
+	}
+}
+int main() {
+	int broj, cj, cd, cs;
+	scanf("%d", &broj);
+	cj = broj % 10;
+	cd = broj / 10 % 10;
+	cs = broj / 100 % 10;
+	check_arm(broj, cj, cd, cs);
 	return 0;
 }

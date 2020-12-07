@@ -2,8 +2,8 @@ from lexer import Lexer
 from parser import Parser
 from generator import Generator
 #from grapher import *
-
-path = './pas/test8.pas'
+id = '04'
+path = f'./Datoteke/Druga faza/{id}/src.pas'
 with open(path, 'r') as source:
     text = source.read()
     lexer = Lexer(text)
@@ -21,7 +21,8 @@ with open(path, 'r') as source:
 #img = grapher.graph()
 # Image(img) 
 # print(ast)
-# for t in tokens:
-#     print(t)
+for t in tokens:
+    print(t)
 
+# TODO 1, 3, 4
 

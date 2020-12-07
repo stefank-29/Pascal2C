@@ -75,9 +75,16 @@ class Parser:
         if self.curr.class_ == Class.ASSIGN: # ako ima dodela vracam id i dodelu
             self.eat(Class.ASSIGN)
             expr = self.expr()
-            return Assign(id_, expr)
+            if self.curr.class_ == Class.EQ:
+                op = self.curr.lexeme
+                self.eat(Class.EQ)
+                second = self.expr()
+                return Assign(id_, BinOp(op, expr, second))
+            else:
+                return Assign(id_, expr)
         else:                           # ako nema vracam samo id
             return id_
+        # BinOp(op, first, second)
 
     '''
      

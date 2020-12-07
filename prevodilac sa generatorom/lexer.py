@@ -37,7 +37,7 @@ class Lexer:
 
     def read_keyword(self):
         lexeme = self.text[self.pos]
-        while self.pos + 1 < self.len and self.text[self.pos + 1].isalnum():
+        while self.pos + 1 < self.len and self.text[self.pos + 1].isalnum() or self.text[self.pos + 1] == '_' :
             lexeme += self.next_char()
         lexeme.lower() # pascal nije case sensitive
         if lexeme == 'if':

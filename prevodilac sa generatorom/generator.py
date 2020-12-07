@@ -1,9 +1,10 @@
 import re
 from grapher import Visitor
 
+# TODO
 # Funkcije za rad sa brojevima (inc, dec, ord, chr)
 # Funkcije za rad sa stringovima (length, insert)
-
+# scanf bez razmaka
 
 
 class Generator(Visitor):
@@ -301,8 +302,8 @@ class Generator(Visitor):
                                         self.append('%f')
                                     elif k == 'char':
                                         self.append('%c')
-                                    if i != (len(args)-1): # za poslednji bez _
-                                        self.append(' ')
+                                    # if i != (len(args)-1): # za poslednji bez _
+                                    #     self.append(' ')
                             else:
                                 if val == arg.id_.value:
                                     if k == 'string':
@@ -313,8 +314,8 @@ class Generator(Visitor):
                                         self.append('%f')
                                     elif k == 'char':
                                         self.append('%c')
-                                    if i != (len(args)-1): # za poslednji bez _
-                                        self.append(' ')
+                                    # if i != (len(args)-1): # za poslednji bez _
+                                    #     self.append(' ')
 
             self.append('", ')
             for i, arg in enumerate(args):
