@@ -4,7 +4,7 @@ from grapher import Visitor
 # TODO 
 # Funkcije za rad sa brojevima (inc, dec, ord - samo bez, #? chr - valja isto bez)
 # Funkcije za rad sa stringovima (length, insert)
-# scanf bez razmaka
+
 
 
 class Generator(Visitor):
@@ -267,10 +267,7 @@ class Generator(Visitor):
                                     self.append('%f')
                                 elif k == 'char':
                                     self.append('%c')
-                    # print(self.varTypes)
-                    # print('--------------------')
-                    # print(self.currFuncVarTypes)
-                    # print('\n')
+
                     for k, arr in self.currFuncVarTypes.items():
                         for val in arr:
                             if val == arg.value:
@@ -353,6 +350,7 @@ class Generator(Visitor):
                 elif type(arg).__name__ == 'Char':
                     self.append(arg.value)
                 elif type(arg).__name__ == 'Id':
+                    print(arg.value)
                     variables.append(arg)
                     for k, arr in self.varTypes.items():
                         for val in arr:
@@ -375,7 +373,22 @@ class Generator(Visitor):
                                 elif k == 'real':
                                     self.append('%f')
                                 elif k == 'char':
-                                    self.append('%c')    
+                                    self.append('%c')  
+                if type(arg).__name__ == 'FuncCall':
+                    variables.append(arg)
+                    if arg.id_.value == 'chr':
+                        self.append('%c')
+                    elif arg.id_.value == 'ord':
+                        self.append('%d')
+                    elif arg.id_.value == 'inc':
+                        self.append('%d')
+                    elif arg.id_.value == 'dec':
+                        self.append('%d')
+                    elif arg.id_.value == 'lenght':
+                        self.append('%d')
+                    elif arg.id_.value == 'insert':
+                        self.append('%s')    
+                    
             self.append('"')
             if len(variables) > 0:
                 self.append(', ')
@@ -396,6 +409,8 @@ class Generator(Visitor):
             self.visit(node.args, args[1])
             self.append(')')
         elif func == 'ord':
+            self.visit(node.args, args[0])
+        elif func == 'chr':
             self.visit(node.args, args[0])
         else:
             self.append(func)
