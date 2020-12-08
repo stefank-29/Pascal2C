@@ -2,8 +2,9 @@ import re
 from grapher import Visitor
 
 # TODO 
-# Funkcije za rad sa brojevima (inc, dec, ord - samo bez, #? chr - valja isto bez)
-# Funkcije za rad sa stringovima (length, insert)
+# 1) Zaokruzivanje
+# 2) Zagrade u izrazima 
+# 3) za ascii arr[i-j]
 
 
 
@@ -15,6 +16,7 @@ class Generator(Visitor):
         self.varTypes = {} # tipovi promenljivih
         self.currFuncVarTypes = {}
         self.currFunction = {}  # {ime : {tip: 'promenljive'}}
+        self.funcTypes = {}
 
     # pomocne funkcije
     def append(self, text): # dodaje string u kod
@@ -114,6 +116,14 @@ class Generator(Visitor):
                 self.append('return ')
                 self.visit(node, node.expr)
                 return
+            if node.id_.value == 'ascii':
+                self.visit(node, node.id_)
+                self.append(' = ')
+                self.visit(node.expr, node.expr.id_)
+                self.append('[')
+                self.visit(node.expr, node.expr.index)
+                self.append('-1]')
+                return
         self.visit(node, node.id_)
         self.append(' = ')
         self.visit(node, node.expr)
@@ -189,10 +199,13 @@ class Generator(Visitor):
         self.append('(')
         self.visit(node, node.params)
         self.append(')')
-        for par in node.params.params.items():
+        
+        self.funcTypes[node.id_.value] = node.type_.value # cuvanje tipa funckije
+
+        for par in node.params.params.items(): 
             v = ([p.value for p in par[1]])
-            self.currFuncVarTypes[par[0].value] = v
-        for par in node.params.params.items():
+            self.currFuncVarTypes[par[0].value] = v 
+        for par in node.params.params.items(): # cuvanje tipova parametara
             params = ({par[0].value: [p.value for p in par[1]]})
             self.currFunction[node.id_.value] = params
         self.append('{ \n\r')
@@ -250,6 +263,8 @@ class Generator(Visitor):
                                     self.append('%f')
                                 elif k == 'char':
                                     self.append('%c')
+                                elif k == 'boolean':
+                                    self.append('%d')
                 if type(arg).__name__ == 'String':
                     self.append(arg.value)
                 elif type(arg).__name__ == 'Char':
@@ -267,6 +282,8 @@ class Generator(Visitor):
                                     self.append('%f')
                                 elif k == 'char':
                                     self.append('%c')
+                                elif k == 'boolean':
+                                    self.append('%d')
 
                     for k, arr in self.currFuncVarTypes.items():
                         for val in arr:
@@ -278,7 +295,38 @@ class Generator(Visitor):
                                 elif k == 'real':
                                     self.append('%f')
                                 elif k == 'char':
-                                    self.append('%c')    
+                                    self.append('%c')  
+                                elif k == 'boolean':
+                                    self.append('%d')  
+                if type(arg).__name__ == 'FuncCall':
+                    variables.append(arg)
+                    if arg.id_.value == 'chr':
+                        self.append('%c')
+                    elif arg.id_.value == 'ord':
+                        self.append('%d')
+                    elif arg.id_.value == 'inc':
+                        self.append('%d')
+                    elif arg.id_.value == 'dec':
+                        self.append('%d')
+                    elif arg.id_.value == 'lenght':
+                        self.append('%d')
+                    elif arg.id_.value == 'insert':
+                        self.append('%s')    
+                    else:
+                        for k, v in self.funcTypes.items(): # k - id, v - type
+                            if arg.id_.value == k:
+                                if v == 'string':
+                                    self.append('%s')
+                                elif v == 'integer':
+                                    self.append('%d')
+                                elif v == 'real':
+                                    self.append('%f')
+                                elif v == 'char':
+                                    self.append('%c')  
+                                elif v == 'boolean':
+                                    self.append('%d')  
+
+
             self.append('\\n"')
             if len(variables) > 0:
                 self.append(', ')
@@ -320,7 +368,19 @@ class Generator(Visitor):
 
             self.append('", ')
             for i, arg in enumerate(args):
-                self.append('&')
+                flag = True
+                for k, arr in self.varTypes.items():
+                    for val in arr:
+                        if val == arg.value:
+                            if k == 'string':
+                                flag = False
+                for k, arr in self.currFuncVarTypes.items():
+                    for val in arr:
+                        if val == arg.value:
+                            if k == 'string':
+                                flag = False
+                if flag:
+                    self.append('&')
                 self.visit(node, arg)
                 if i != (len(args)-1):
                     self.append(', ')
@@ -329,7 +389,7 @@ class Generator(Visitor):
             variables = []
             self.append('printf("')
             for arg in args:
-                if type(arg).__name__ == 'BinOp': # ako je expr arg u writeln
+                if type(arg).__name__ == 'BinOp': # ako je expr arg u write
                     variables.append(arg)
                     self.append('%d')
                 if type(arg).__name__ == 'ArrayElem':
@@ -345,12 +405,13 @@ class Generator(Visitor):
                                     self.append('%f')
                                 elif k == 'char':
                                     self.append('%c')
+                                elif k == 'boolean':
+                                    self.append('%d')
                 if type(arg).__name__ == 'String':
                     self.append(arg.value)
                 elif type(arg).__name__ == 'Char':
                     self.append(arg.value)
                 elif type(arg).__name__ == 'Id':
-                    print(arg.value)
                     variables.append(arg)
                     for k, arr in self.varTypes.items():
                         for val in arr:
@@ -363,6 +424,8 @@ class Generator(Visitor):
                                     self.append('%f')
                                 elif k == 'char':
                                     self.append('%c')
+                                elif k == 'boolean':
+                                    self.append('%d')
                     for k, arr in self.currFuncVarTypes.items():
                         for val in arr:
                             if val == arg.value:
@@ -373,7 +436,9 @@ class Generator(Visitor):
                                 elif k == 'real':
                                     self.append('%f')
                                 elif k == 'char':
-                                    self.append('%c')  
+                                    self.append('%c') 
+                                elif k == 'boolean':
+                                    self.append('%d') 
                 if type(arg).__name__ == 'FuncCall':
                     variables.append(arg)
                     if arg.id_.value == 'chr':
@@ -388,6 +453,20 @@ class Generator(Visitor):
                         self.append('%d')
                     elif arg.id_.value == 'insert':
                         self.append('%s')    
+                    else:
+                        for k, v in self.funcTypes.items(): # k - id, v - type
+                            if arg.id_.value == k:
+                                if v == 'string':
+                                    self.append('%s')
+                                elif v == 'integer':
+                                    self.append('%d')
+                                elif v == 'real':
+                                    self.append('%f')
+                                elif v == 'char':
+                                    self.append('%c')  
+                                elif v == 'boolean':
+                                    self.append('%d')  
+ 
                     
             self.append('"')
             if len(variables) > 0:
@@ -412,6 +491,27 @@ class Generator(Visitor):
             self.visit(node.args, args[0])
         elif func == 'chr':
             self.visit(node.args, args[0])
+        elif func == 'inc':
+            id_ = args[0]
+            self.visit(node, id_)
+            self.append(' = ')
+            self.visit(node, id_)
+            self.append(' + 1')
+        elif func == 'dec':
+            id_ = args[0]
+            self.visit(node, id_)
+            self.append(' = ')
+            self.visit(node, id_)
+            self.append(' - 1')
+        elif func == 'insert':
+            char = args[0]
+            arr = args[1]
+            pos = args[2]
+            self.visit(node, arr)
+            self.append('[')
+            self.visit(node, pos)
+            self.append('-1] = ')
+            self.visit(node, char)
         else:
             self.append(func)
             self.append('(')

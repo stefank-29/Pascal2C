@@ -42,6 +42,7 @@ begin
 	while i <= len do
 	begin
 		ascii := s[i];
+		tmp := s[i];
         inc(i);
 
         tmp := cifra_stotina(ascii);
