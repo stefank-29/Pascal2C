@@ -3,8 +3,7 @@ from grapher import Visitor
 
 # TODO 
 # 1) Zaokruzivanje
-# 2) Zagrade u izrazima 
-# 3) za ascii arr[i-j]
+# 2) Zagrade u izrazima (logic da cuva i zagrade)
 
 
 
@@ -682,6 +681,7 @@ class Generator(Visitor):
         self.append(node.value)
 
     def visit_BinOp(self, parent, node): #TODO ako su drugaciji op zameniti
+       # self.append('(')
         self.visit(node, node.first)
         self.append(' ')
         if node.symbol == 'and':
@@ -700,6 +700,29 @@ class Generator(Visitor):
             self.append(node.symbol)
         self.append(' ')
         self.visit(node, node.second)
+       # self.append(')')
+
+    def visit_BinOpPar(self, parent, node): 
+        self.append('(')
+        self.visit(node, node.first)
+        self.append(' ')
+        if node.symbol == 'and':
+            self.append(' && ')
+        elif node.symbol == 'or':
+            self.append(' || ')
+        elif node.symbol == '<>':
+            self.append('!=')
+        elif node.symbol == '=':
+            self.append('==')
+        elif node.symbol == 'div':
+            self.append('/')
+        elif node.symbol == 'mod':
+            self.append('%')
+        else:
+            self.append(node.symbol)
+        self.append(' ')
+        self.visit(node, node.second)
+        self.append(')')
 
     def visit_UnOp(self, parent, node): #TODO zameniti opeartore koji su razliciti
         if node.symbol == 'not':
@@ -707,6 +730,15 @@ class Generator(Visitor):
         elif node.symbol != '&':
             self.append(node.symbol)
         self.visit(node, node.first)
+
+    def visit_UnOpPar(self, parent, node):
+        if node.symbol == 'not':
+            self.append('!')
+        elif node.symbol != '&':
+            self.append(node.symbol)
+        self.append('(')
+        self.visit(node, node.first)
+        self.append(')')
 
     def generate(self, path):
         self.visit(None, self.ast) # visit za koren stabla (Program) - rekurzivan poziv (generise kod za svaki cvor)

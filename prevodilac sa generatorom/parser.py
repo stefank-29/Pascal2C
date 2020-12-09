@@ -4,7 +4,6 @@ from token import Token
 from class_ import Class
 from astComponents import *
 
-# TODO self.eat(Class.SEMICOLON) baca gresku negde proveriti!
 
 class Parser:
     def __init__(self, tokens):
@@ -432,18 +431,20 @@ class Parser:
             op = self.curr
             self.eat(self.curr.class_)
             first = None
+            # TODO unop sa zagradama
             if self.curr.class_ == Class.LPAREN:
                 self.eat(Class.LPAREN)
                 first = self.logic()
                 self.eat(Class.RPAREN)
+                return UnOpPar(op.lexeme, first)
             else:
                 first = self.factor()
-            return UnOp(op.lexeme, first)
+                return UnOp(op.lexeme, first)
         elif self.curr.class_ == Class.LPAREN:
             self.eat(Class.LPAREN)
             first = self.logic()
             self.eat(Class.RPAREN)
-            return first
+            return BinOpPar(first.symbol,first.first, first.second)
         elif self.curr.class_ == Class.SEMICOLON:
             return None
         else:

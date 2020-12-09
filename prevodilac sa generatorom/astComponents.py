@@ -219,8 +219,18 @@ class BinOp(Node):
         self.first = first
         self.second = second
 
+class BinOpPar(Node):
+    def __init__(self, symbol, first, second):
+        self.symbol = symbol
+        self.first = first
+        self.second = second
 
 class UnOp(Node):
+    def __init__(self, symbol, first):
+        self.symbol = symbol
+        self.first = first
+
+class UnOpPar(Node):
     def __init__(self, symbol, first):
         self.symbol = symbol
         self.first = first
