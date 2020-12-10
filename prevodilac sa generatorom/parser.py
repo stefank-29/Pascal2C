@@ -362,6 +362,21 @@ class Parser:
             if len(args) > 0:
                 self.eat(Class.COMMA)
             args.append(self.expr())
+            
+            #print('-----------')
+            #print(self.curr.class_)
+            if self.curr.class_ == Class.DECL:
+                args.append(':')
+                self.eat(Class.DECL)
+                args.append(self.expr())
+                args.append(':')
+                self.eat(Class.DECL)
+                args.append(self.expr())
+            #print(args)
+            
+       # for arg in args:
+            #print (arg.value)
+    
         return Args(args)
 
     def elems(self):

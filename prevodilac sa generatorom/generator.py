@@ -3,9 +3,6 @@ from grapher import Visitor
 
 # TODO 
 # 1) Zaokruzivanje
-# 2) Zagrade u izrazima (logic da cuva i zagrade)
-
-
 
 class Generator(Visitor):
     def __init__(self, ast):
@@ -245,10 +242,21 @@ class Generator(Visitor):
         if func == 'writeln':
             variables = []
             self.append('printf("')
+            x = 0
             for arg in args:
-                if type(arg).__name__ == 'BinOp': # ako je expr arg u writeln
+                if type(arg).__name__ == 'BinOp' or type(arg).__name__ == 'BinOpPar': # ako je expr arg u writeln
                     variables.append(arg)
-                    self.append('%d')
+                    self.append('%f')
+                if type(arg).__name__ == 'Integer':
+                    x = x + 1
+                    if x % 2 == 0:
+                        t = self.c[-1]
+                        c = list(self.c)
+                        c[-1] = '.'
+                        self.c = "".join(c)
+                        self.append(arg.value)
+                        self.append(t)
+
                 if type(arg).__name__ == 'ArrayElem':
                     variables.append(arg)
                     for k, arr in self.varTypes.items():
@@ -387,10 +395,22 @@ class Generator(Visitor):
         elif func == 'write':
             variables = []
             self.append('printf("')
+            x = 0
             for arg in args:
-                if type(arg).__name__ == 'BinOp': # ako je expr arg u write
+                if type(arg).__name__ == 'BinOp' or type(arg).__name__ == 'BinOpPar': # ako je expr arg u write
                     variables.append(arg)
-                    self.append('%d')
+                    self.append('%f')
+                
+                if type(arg).__name__ == 'Integer':
+                    x = x + 1
+                    if x % 2 == 0:
+                        t = self.c[-1]
+                        c = list(self.c)
+                        c[-1] = '.'
+                        self.c = "".join(c)
+                        self.append(arg.value)
+                        self.append(t)
+
                 if type(arg).__name__ == 'ArrayElem':
                     variables.append(arg)
                     for k, arr in self.varTypes.items():
@@ -724,7 +744,7 @@ class Generator(Visitor):
         self.visit(node, node.second)
         self.append(')')
 
-    def visit_UnOp(self, parent, node): #TODO zameniti opeartore koji su razliciti
+    def visit_UnOp(self, parent, node):
         if node.symbol == 'not':
             self.append('!')
         elif node.symbol != '&':
