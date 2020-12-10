@@ -239,7 +239,7 @@ class Generator(Visitor):
     def visit_FuncCall(self, parent, node):
         func = node.id_.value
         args = node.args.args # niz argumenata
-        if func == 'writeln':
+        if func == 'writeln' or func == 'write':
             variables = []
             self.append('printf("')
             x = 0
@@ -333,8 +333,11 @@ class Generator(Visitor):
                                 elif v == 'boolean':
                                     self.append('%d')  
 
+            if func == 'writeln':
+                self.append('\\n"')
+            elif func == 'write':
+                self.append('"')
 
-            self.append('\\n"')
             if len(variables) > 0:
                 self.append(', ')
             for i, var in enumerate(variables):
@@ -392,110 +395,7 @@ class Generator(Visitor):
                 if i != (len(args)-1):
                     self.append(', ')
             self.append(')')
-        elif func == 'write':
-            variables = []
-            self.append('printf("')
-            x = 0
-            for arg in args:
-                if type(arg).__name__ == 'BinOp' or type(arg).__name__ == 'BinOpPar': # ako je expr arg u write
-                    variables.append(arg)
-                    self.append('%f')
-                
-                if type(arg).__name__ == 'Integer':
-                    x = x + 1
-                    if x % 2 == 0:
-                        t = self.c[-1]
-                        c = list(self.c)
-                        c[-1] = '.'
-                        self.c = "".join(c)
-                        self.append(arg.value)
-                        self.append(t)
-
-                if type(arg).__name__ == 'ArrayElem':
-                    variables.append(arg)
-                    for k, arr in self.varTypes.items():
-                        for val in arr:
-                            if val == arg.id_.value:
-                                if k == 'string':
-                                    self.append('%s')
-                                elif k == 'integer':
-                                    self.append('%d')
-                                elif k == 'real':
-                                    self.append('%f')
-                                elif k == 'char':
-                                    self.append('%c')
-                                elif k == 'boolean':
-                                    self.append('%d')
-                if type(arg).__name__ == 'String':
-                    self.append(arg.value)
-                elif type(arg).__name__ == 'Char':
-                    self.append(arg.value)
-                elif type(arg).__name__ == 'Id':
-                    variables.append(arg)
-                    for k, arr in self.varTypes.items():
-                        for val in arr:
-                            if val == arg.value:
-                                if k == 'string':
-                                    self.append('%s')
-                                elif k == 'integer':
-                                    self.append('%d')
-                                elif k == 'real':
-                                    self.append('%f')
-                                elif k == 'char':
-                                    self.append('%c')
-                                elif k == 'boolean':
-                                    self.append('%d')
-                    for k, arr in self.currFuncVarTypes.items():
-                        for val in arr:
-                            if val == arg.value:
-                                if k == 'string':
-                                    self.append('%s')
-                                elif k == 'integer':
-                                    self.append('%d')
-                                elif k == 'real':
-                                    self.append('%f')
-                                elif k == 'char':
-                                    self.append('%c') 
-                                elif k == 'boolean':
-                                    self.append('%d') 
-                if type(arg).__name__ == 'FuncCall':
-                    variables.append(arg)
-                    if arg.id_.value == 'chr':
-                        self.append('%c')
-                    elif arg.id_.value == 'ord':
-                        self.append('%d')
-                    elif arg.id_.value == 'inc':
-                        self.append('%d')
-                    elif arg.id_.value == 'dec':
-                        self.append('%d')
-                    elif arg.id_.value == 'lenght':
-                        self.append('%d')
-                    elif arg.id_.value == 'insert':
-                        self.append('%s')    
-                    else:
-                        for k, v in self.funcTypes.items(): # k - id, v - type
-                            if arg.id_.value == k:
-                                if v == 'string':
-                                    self.append('%s')
-                                elif v == 'integer':
-                                    self.append('%d')
-                                elif v == 'real':
-                                    self.append('%f')
-                                elif v == 'char':
-                                    self.append('%c')  
-                                elif v == 'boolean':
-                                    self.append('%d')  
- 
-                    
-            self.append('"')
-            if len(variables) > 0:
-                self.append(', ')
-            for i, var in enumerate(variables):
-                self.visit(node, var)
-                if i != (len(variables)-1):
-                    self.append(', ')
-            self.append(')')
-
+        
         elif func == 'length': # strlen
             self.append('strlen(')
             self.visit(node, node.args)
@@ -767,30 +667,3 @@ class Generator(Visitor):
             source.write(self.c)
         return path
 
-
-
-
-    #? hardkodovano ako zatreba
-    #   for k, arr in self.varTypes.items():
-    #                     for val in arr:
-    #                         if val == getattr(arg.first, 'value') if type(arg.first).__name__ != 'BinOp' else '' or val == getattr(arg.second, 'value') if type(arg.second).__name__ != 'BinOp' else '':
-    #                             if k == 'string':
-    #                                 self.append('%s')
-    #                             elif k == 'integer':
-    #                                 self.append('%d')
-    #                             elif k == 'real':
-    #                                 self.append('%f')
-    #                             elif k == 'char':
-    #                                 self.append('%c')
-    #                             break
-    #                         else:
-    #                             if val == getattr(arg.first.first, 'value') if type(arg.first.first).__name__ != 'BinOp' else '' or val == getattr(arg.first.second, 'value') if type(arg.first.second).__name__ != 'BinOp' else '' and val == getattr(arg.second.first, 'value') if type(arg.second.first).__name__ != 'BinOp' else '' or val == getattr(arg.second.second, 'value') if type(arg.second.second).__name__ != 'BinOp' else '':
-    #                                 if k == 'string':
-    #                                     self.append('%s')
-    #                                 elif k == 'integer':
-    #                                     self.append('%d')
-    #                                 elif k == 'real':
-    #                                     self.append('%f')
-    #                                 elif k == 'char':
-    #                                     self.append('%c')
-    #                                 break

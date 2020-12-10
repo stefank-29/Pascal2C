@@ -24,5 +24,5 @@ with open(path, 'r') as source:
 # for t in tokens:
 #     print(t)
 
-# TODO 1(zaokr)
+
 
