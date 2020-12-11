@@ -2,7 +2,7 @@ from lexer import Lexer
 from parser import Parser
 from generator import Generator
 #from grapher import *
-id = '01'
+id = '15'
 path = f'./Datoteke/Druga faza/{id}/src.pas'
 with open(path, 'r') as source:
     text = source.read()

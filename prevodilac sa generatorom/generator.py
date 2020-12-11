@@ -1,9 +1,6 @@
 import re
 from grapher import Visitor
 
-# TODO 
-# 1) Zaokruzivanje
-
 class Generator(Visitor):
     def __init__(self, ast):
         self.ast = ast
@@ -246,7 +243,19 @@ class Generator(Visitor):
             for arg in args:
                 if type(arg).__name__ == 'BinOp' or type(arg).__name__ == 'BinOpPar': # ako je expr arg u writeln
                     variables.append(arg)
-                    self.append('%f')
+                    for k, arr in self.varTypes.items():
+                        for val in arr:
+                            if val == arg.first.value:
+                                if k == 'string':
+                                    self.append('%s')
+                                elif k == 'integer':
+                                    self.append('%d')
+                                elif k == 'real':
+                                    self.append('%f')
+                                elif k == 'char':
+                                    self.append('%c')
+                                elif k == 'boolean':
+                                    self.append('%d')
                 if type(arg).__name__ == 'Integer':
                     x = x + 1
                     if x % 2 == 0:
@@ -381,14 +390,24 @@ class Generator(Visitor):
                 flag = True
                 for k, arr in self.varTypes.items():
                     for val in arr:
-                        if val == arg.value:
-                            if k == 'string':
-                                flag = False
+                        if type(arg).__name__ == 'ArrayElem': # provera ako je string da nema '&'
+                            if val == arg.id_.value:
+                                if k == 'string':
+                                    flag = False
+                        else:
+                            if val == arg.value:
+                                if k == 'string':
+                                    flag = False
                 for k, arr in self.currFuncVarTypes.items():
                     for val in arr:
-                        if val == arg.value:
-                            if k == 'string':
-                                flag = False
+                        if type(arg).__name__ == 'ArrayElem':
+                            if val == arg.id_.value:
+                                if k == 'string':
+                                    flag = False
+                        else:
+                            if val == arg.value:
+                                if k == 'string':
+                                    flag = False
                 if flag:
                     self.append('&')
                 self.visit(node, arg)
